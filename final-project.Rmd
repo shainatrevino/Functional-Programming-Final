@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 	  effects (e.g., a plotting function)
   + Each function must do exactly one thing
   + The functions **may** replicate the behavior of a base function - as noted 
-    above 9this is about practicing the skills you learn in class
+    above this is about practicing the skills you learn in class
 * Code is fully reproducible and housed on GitHub 
 * No obvious errors in chosen output format 
 * Deployed on the web and shareable through a link 
@@ -30,3 +30,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## What we said we were going to do
 
 We will be producing a series of blog posts that will be primarily instructive for future applied use or teaching others. The data source that we will be using is the Center for Disease Control and Prevention's (CDC) National Health and Nutrition Examination Survey (NHANES) dataset. The most recent edition available is for 2015-2016. However, there is data spanning from 1999 – 2016 on multiple health behaviors. We will be using the substance use and demographic variables.
+
+## Outline
+
+1. Explaining each componenet
+
+2. Show all of them in a specific example
