@@ -1,0 +1,32 @@
+---
+title: "final-project"
+author: "Shaina Trevino"
+date: "5/16/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Requirements per syllabus
+
+* No code is used repetitively (no more than twice)
+* More than one variant of `purrr::map` is used 
+* At least one {purrr} function outside the basic `map` family (`walk_*`, 
+  `reduce`, `modify_*`, etc.) 
+* At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
+* At least one use case of `purrr::nest %>% mutate()` 
+* At least two custom functions 
+	+ Each function must be "pure" unless it is clear that it should have side 
+	  effects (e.g., a plotting function)
+  + Each function must do exactly one thing
+  + The functions **may** replicate the behavior of a base function - as noted 
+    above this is about practicing the skills you learn in class
+* Code is fully reproducible and housed on GitHub 
+* No obvious errors in chosen output format 
+* Deployed on the web and shareable through a link 
+
+## What we said we were going to do
+
+We will be producing a series of blog posts that will be primarily instructive for future applied use or teaching others. The data source that we will be using is the Center for Disease Control and Prevention's (CDC) National Health and Nutrition Examination Survey (NHANES) dataset. The most recent edition available is for 2015-2016. However, there is data spanning from 1999 – 2016 on multiple health behaviors. We will be using the substance use and demographic variables.
