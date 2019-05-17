@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 	  effects (e.g., a plotting function)
   + Each function must do exactly one thing
   + The functions **may** replicate the behavior of a base function - as noted 
-    above this is about practicing the skills you learn in class
+    above 9this is about practicing the skills you learn in class
 * Code is fully reproducible and housed on GitHub 
 * No obvious errors in chosen output format 
 * Deployed on the web and shareable through a link 
