@@ -1,33 +1,13 @@
 ---
-title: "final-project"
+title: "Final Project Outline"
 author: "Shaina Trevino"
-date: "5/16/2019"
+date: "5/20/2019"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(here)
-library(rio)
 ```
-
-## Importing data
-
-```{r import}
-drug_by_year <- import(here("data", "drug_by_year.csv"),
-                       setclass = "tbl_df")
-
-recent_drug <- import(here("data", "2015_drug_dep.csv"),
-                      setclass = "tbl_df")
-```
-
-#### Info about the data:
-
-`drug_by_year` has data from 2005 to 2015 and reports on the people who responded yes to using illicit substances in the last year. 
-
-`recent_drug` has data from 2015-2016 (most recent NHANES data available) and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. 
-  * `age_stim` is a composite measure of age of first meth and cocaine use (e.g., age of first stimulant use)
-
 
 ## Requirements per syllabus
 
@@ -47,3 +27,12 @@ recent_drug <- import(here("data", "2015_drug_dep.csv"),
 * No obvious errors in chosen output format 
 * Deployed on the web and shareable through a link 
 
+## What we said we were going to do
+
+We will be producing a series of blog posts that will be primarily instructive for future applied use or teaching others. The data source that we will be using is the Center for Disease Control and Prevention's (CDC) National Health and Nutrition Examination Survey (NHANES) dataset. The most recent edition available is for 2015-2016. However, there is data spanning from 1999 – 2016 on multiple health behaviors. We will be using the substance use and demographic variables.
+
+## Outline
+
+1. Explaining each componenet
+
+2. Show all of them in a specific example
