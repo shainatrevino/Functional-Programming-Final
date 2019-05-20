@@ -28,10 +28,31 @@ recent_drug <- import(here("data", "2015_drug_dep.csv"),
 `recent_drug` has data from 2015-2016 (most recent NHANES data available) and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. 
   * `age_stim` is a composite measure of age of first meth and cocaine use (e.g., age of first stimulant use)
 
+# Tutorial
+
+## How to use `purrr::map`!
+
+* More than one variant of `purrr::map` is used 
+
+LIST ALL VARIANTS OF PURRR:MAP AND EXPLAIN DIFFERENCES - SHOW 2 TYPES
+
+* At least one {purrr} function outside the basic `map` family (`walk_*`, 
+  `reduce`, `modify_*`, etc.) 
+  
+EXPLAIN ALL (MOSTLY WALK) AND SHOW HOW IT IS USED - FOR PLOT EXAMPLE - SEE MIDTERM
+  
+* At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
+
+EXPLAIN BOTH MAP 2 AND PMAP AND SHOW HOW PMAP WORKS WITH PLOT (BEFORE WALK? - SEE MIDTERM)
+
+* At least one use case of `purrr::nest %>% mutate()` 
+
+EXPLAIN LIST COLUMNS AND USE FOR GROUPING STATS (e.g., group by drug and year then calculate age of use etc.) - POSSIBLY ON MIDTERM OR MACHINE LEARNING
+
 
 ## Requirements per syllabus
 
-* No code is used repetitively (no more than twice)
+* *No code is used repetitively (no more than twice)*
 * More than one variant of `purrr::map` is used 
 * At least one {purrr} function outside the basic `map` family (`walk_*`, 
   `reduce`, `modify_*`, etc.) 
