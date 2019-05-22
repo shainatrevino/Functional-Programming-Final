@@ -313,14 +313,213 @@ $(document).ready(function () {
 </div>
 
 
+<div id="importing-data" class="section level2">
+<h2>Importing data</h2>
+<pre class="r"><code>drug_by_year &lt;- import(here(&quot;data&quot;, &quot;drug_by_year.csv&quot;),
+                       setclass = &quot;tbl_df&quot;)
+
+recent_drug &lt;- import(here(&quot;data&quot;, &quot;2015_drug_dep.csv&quot;),
+                      setclass = &quot;tbl_df&quot;)</code></pre>
+<div id="info-about-the-data" class="section level4">
+<h4>Info about the data:</h4>
+<p><code>drug_by_year</code> has data from 2005 to 2015 and reports on the people who responded yes to using illicit substances in the last year.</p>
+<p><code>recent_drug</code> has data from 2015-2016 (most recent NHANES data available) and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. * <code>age_stim</code> is a composite measure of age of first meth and cocaine use (e.g., age of first stimulant use)</p>
+</div>
+</div>
+<div id="tutorial" class="section level1">
+<h1>Tutorial</h1>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>What is looping/iterating</p>
+<p>What is Functional Programming</p>
+</div>
+<div id="how-to-use-purrrmap" class="section level2">
+<h2>How to use <code>purrr::map</code>!</h2>
+<div id="more-than-one-variant-of-purrrmap-is-used" class="section level4">
+<h4>* More than one variant of <code>purrr::map</code> is used</h4>
+<p>LIST ALL VARIANTS OF PURRR:MAP AND EXPLAIN DIFFERENCES - SHOW 2 TYPES</p>
+<ol style="list-style-type: decimal">
+<li>purrr:map is a functional. It takes a vector and a function as an input, runs the function for each element in the vector, and then returns a list.</li>
+</ol>
+<ul>
+<li><p>It is loaded in the tidyverse</p></li>
+<li><p>can override return of list and instead return an atomic vector by using variants of map:</p>
+<ul>
+<li><p><code>map_dbl</code> returns vector of type double</p></li>
+<li><p><code>map_chr</code> returns a vector of type character</p></li>
+<li><p><code>map_lgl</code> returns a vector of type logical (e.g., <code>TRUE</code> or <code>FALSE</code>)</p></li>
+<li><p><code>map_int</code> returns a vector of type integer</p></li>
+</ul></li>
+</ul>
+<pre class="r"><code>v &lt;- c(1.85, 2.07, 3.71, 4.21, 5.36)
+#takes vector and rounds up - returns list
+map(v, round)</code></pre>
+<pre><code>## [[1]]
+## [1] 2
+## 
+## [[2]]
+## [1] 2
+## 
+## [[3]]
+## [1] 4
+## 
+## [[4]]
+## [1] 4
+## 
+## [[5]]
+## [1] 5</code></pre>
+<pre class="r"><code>#return vector of type double
+map_dbl(v, round)</code></pre>
+<pre><code>## [1] 2 2 4 4 5</code></pre>
+<pre class="r"><code>#return vector as character
+map_chr(v, round)</code></pre>
+<pre><code>## [1] &quot;2.000000&quot; &quot;2.000000&quot; &quot;4.000000&quot; &quot;4.000000&quot; &quot;5.000000&quot;</code></pre>
+<pre class="r"><code>#return vector of type logical - is each element of type double
+map_lgl(v, is.double)</code></pre>
+<pre><code>## [1] TRUE TRUE TRUE TRUE TRUE</code></pre>
+<pre class="r"><code>#return vector of type integer - how many elements are in each element - here it is only 1
+map_int(v, length)</code></pre>
+<pre><code>## [1] 1 1 1 1 1</code></pre>
+<p>Since <code>map</code> requires a vector for an input, and data frames are lists containing vectors, you can use <code>map</code> to iterate through dataframes.</p>
+<p>For example, say we have this data (EXPLAIN DATA) and we want to calculate mean for age of first use and depression sum. Since there is quite a bit of missing data, we need to add arguments to the mean function.</p>
+<p>We would do so by creating an inline anonymous function</p>
+<pre class="r"><code>#mean and sd
+d &lt;- recent_drug %&gt;% 
+  select(age_cocaine:sum_depression)
+
+means &lt;- map_dbl(d, function(x) mean(x, na.rm = TRUE)) #explain x is a place holder
+means</code></pre>
+<pre><code>##    age_cocaine     age_heroin       age_meth  age_marijuana       age_stim 
+##      21.342308      23.870968      21.623116      17.289796      20.792105 
+## sum_depression 
+##       3.314233</code></pre>
+<pre class="r"><code>#same result, less code.
+
+means &lt;- map_dbl(d, ~ mean(.x, na.rm = TRUE))
+means</code></pre>
+<pre><code>##    age_cocaine     age_heroin       age_meth  age_marijuana       age_stim 
+##      21.342308      23.870968      21.623116      17.289796      20.792105 
+## sum_depression 
+##       3.314233</code></pre>
+<p>Can also use map_df to return data frame instead of atomic vector.</p>
+<p>Say we want to return data frame of mean and standard deviations of each column</p>
+<pre class="r"><code>#you would expect this to work, but doesn&#39;t because only the last line in the function is being evaluated and printed
+map_df(d, function(x) {
+  mean(x, na.rm = TRUE)
+  sd(x, na.rm = TRUE)
+})</code></pre>
+<pre><code>## # A tibble: 1 x 6
+##   age_cocaine age_heroin age_meth age_marijuana age_stim sum_depression
+##         &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;          &lt;dbl&gt;
+## 1        5.51       8.11     7.19          4.56     5.44           4.41</code></pre>
+<pre class="r"><code>column_names &lt;- colnames(d)
+#need to instead
+map_df(d, function(x) {
+  summarize(d, mean = mean(x, na.rm = TRUE),
+            sd = sd(x, na.rm = TRUE))
+}, .id = &quot;column_names&quot;)</code></pre>
+<pre><code>## # A tibble: 6 x 3
+##   column_names    mean    sd
+##   &lt;chr&gt;          &lt;dbl&gt; &lt;dbl&gt;
+## 1 age_cocaine    21.3   5.51
+## 2 age_heroin     23.9   8.11
+## 3 age_meth       21.6   7.19
+## 4 age_marijuana  17.3   4.56
+## 5 age_stim       20.8   5.44
+## 6 sum_depression  3.31  4.41</code></pre>
+<pre class="r"><code>#or you could do this in two separate steps, using map for looping the functions through vectors then putting vectors into dataframe
+mean &lt;- map(d, ~mean(.x, na.rm = TRUE))
+sd &lt;- map(d, ~sd(.x, na.rm = TRUE))
+#combine vectors
+cv &lt;- c(mean, sd, recursive = TRUE)
+#change attributes
+attr(cv, &quot;dim&quot;) &lt;- c(6, 2) #6 variables in two columns (mean and sd)
+colnames(cv) &lt;- c(&quot;mean&quot;, &quot;sd&quot;)
+#transform to dataframe
+data.frame(cv, row.names = column_names)</code></pre>
+<pre><code>##                     mean       sd
+## age_cocaine    21.342308 5.514226
+## age_heroin     23.870968 8.106836
+## age_meth       21.623116 7.193829
+## age_marijuana  17.289796 4.558000
+## age_stim       20.792105 5.436277
+## sum_depression  3.314233 4.411444</code></pre>
+</div>
+<div id="at-least-one-instance-of-parallel-iteration-e.g.-map2_-pmap_" class="section level4">
+<h4>* At least one instance of parallel iteration (e.g., <code>map2_*</code>, <code>pmap_*</code>)</h4>
+<p>EXPLAIN BOTH MAP 2 AND PMAP AND SHOW HOW PMAP WORKS WITH PLOT (BEFORE WALK? - SEE MIDTERM)</p>
+<p>The <code>map</code> variants discussed above all take a single…</p>
+</div>
+<div id="at-least-one-purrr-function-outside-the-basic-map-family-walk_-reduce-modify_-etc." class="section level4">
+<h4>* At least one {purrr} function outside the basic <code>map</code> family (<code>walk_*</code>, <code>reduce</code>, <code>modify_*</code>, etc.)</h4>
+<p>The <code>map()</code> variants discussed above all return an output (either an atomic vector or list). However, sometimes you don’t need to return an atomic vector or list, but iteration would still be helpful.</p>
+<p>Very useful variant of <code>map()</code> is <code>walk()</code>, specifically <code>walk2()</code> which can be used to save objects to a disk. Note: when saving something to a disk you have to provide 2 inputs: the object and the file path - this requires parallel iteration.</p>
+<pre class="r"><code>by_year &lt;- split(drug_by_year, drug_by_year$year)
+paths &lt;- here(&quot;data&quot;, paste0(&quot;year-&quot;, names(by_year), &quot;.csv&quot;))
+walk2(by_year, paths, write.csv)
+#splits our longitudinal dataset by year and saves separate csv file for each year with the title (&quot;year-2005&quot;) in the data folder of the working directory
+
+list.files(&quot;data&quot;)</code></pre>
+<p><code>reduce()</code> takes a vector of any length as it’s input and returns a vector of length 1. For example <code>reduce(1:4, f)</code> returns <code>f(f(f(1, 2), 3), 4)</code>.</p>
+<p><code>modify()</code> returns the same type of input it is provided. For example, <code>modify(df, f)</code> will run the function on each column of the dataframe and return a dataframe as the output.</p>
+<p>EXPLAIN ALL (MOSTLY WALK) AND SHOW HOW IT IS USED - FOR PLOT EXAMPLE - SEE MIDTERM</p>
+</div>
+<div id="at-least-one-use-case-of-purrrnest-mutate" class="section level4">
+<h4>* At least one use case of <code>purrr::nest %&gt;% mutate()</code></h4>
+<p>EXPLAIN LIST COLUMNS AND USE FOR GROUPING STATS (e.g., group by drug and year then calculate age of use etc.)</p>
+<pre class="r"><code>dat &lt;- recent_drug %&gt;% 
+  select(-1:-2, -age_stim) %&gt;% 
+  pivot_longer(cols = age_cocaine:age_marijuana, names_to = c(&quot;dis&quot;, &quot;drug&quot;), names_sep = &quot;_&quot;) %&gt;% 
+  select(-dis) %&gt;% 
+  rename(age_use = value) %&gt;% 
+  filter(!is.na(age_use)) %&gt;% 
+  mutate(mental_health = ifelse(mental_health == &quot;Yes&quot;, &quot;Yes&quot;, &quot;No&quot;),
+         sex = fct_relevel(sex, ref = &quot;Male&quot;),
+         mental_health = fct_relevel(mental_health, ref = &quot;No&quot;))
+
+#fit one model per drug and see coefficients
+by_drug_coefs &lt;- dat %&gt;% 
+  group_by(drug) %&gt;% 
+  nest() %&gt;% 
+  mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
+         coef = map(model, ~tidy(.x))) %&gt;% 
+  unnest(coef)
+
+#Look at model fit stats per drug model - will be bad
+by_drug_fit &lt;- dat %&gt;% 
+  group_by(drug) %&gt;% 
+  nest() %&gt;% 
+  mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
+         fit = map(model, ~glance(.x))) %&gt;% 
+  unnest(fit)
+
+#mean age of use for males and females in first model
+by_drug_sex &lt;- dat %&gt;% 
+  group_by(drug) %&gt;% 
+  nest() %&gt;% 
+  mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
+         coefs = map(model, coef),
+         males = map_dbl(coefs, 1),
+         females = males + map_dbl(coefs, 2)) %&gt;% 
+  select(drug, males, females)
+
+#fit multiple models by year
+by_drug_models &lt;- dat %&gt;% 
+  group_by(drug) %&gt;% 
+  nest() %&gt;% 
+  mutate(m1 = map(data, ~lm(age_use ~ sex, data = .x)),
+         m2 = map(data, ~lm(age_use ~ sex + mental_health, data = .x)),
+         m3 = map(data, ~lm(age_use ~ sex * mental_health, data = .x)))</code></pre>
+</div>
+</div>
 <div id="requirements-per-syllabus" class="section level2">
 <h2>Requirements per syllabus</h2>
 <ul>
-<li>No code is used repetitively (no more than twice)</li>
+<li><em>No code is used repetitively (no more than twice)</em></li>
 <li>More than one variant of <code>purrr::map</code> is used</li>
 <li>At least one {purrr} function outside the basic <code>map</code> family (<code>walk_*</code>, <code>reduce</code>, <code>modify_*</code>, etc.)</li>
 <li>At least one instance of parallel iteration (e.g., <code>map2_*</code>, <code>pmap_*</code>)</li>
-<li>At least one use case of <code>purrr::nest %&gt;% mutate()</code></li>
+<li><p>At least one use case of <code>purrr::nest %&gt;% mutate()</code></p></li>
 <li>At least two custom functions
 <ul>
 <li>Each function must be “pure” unless it is clear that it should have side effects (e.g., a plotting function)</li>
@@ -329,12 +528,9 @@ $(document).ready(function () {
 </ul></li>
 <li>Code is fully reproducible and housed on GitHub</li>
 <li>No obvious errors in chosen output format</li>
-<li>Deployed on the web and shareable through a link</li>
+<li><p>Deployed on the web and shareable through a link</p></li>
 </ul>
 </div>
-<div id="what-we-said-we-were-going-to-do" class="section level2">
-<h2>What we said we were going to do</h2>
-<p>We will be producing a series of blog posts that will be primarily instructive for future applied use or teaching others. The data source that we will be using is the Center for Disease Control and Prevention’s (CDC) National Health and Nutrition Examination Survey (NHANES) dataset. The most recent edition available is for 2015-2016. However, there is data spanning from 1999 – 2016 on multiple health behaviors. We will be using the substance use and demographic variables.</p>
 </div>
 
 

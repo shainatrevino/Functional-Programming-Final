@@ -2,7 +2,8 @@
 title: "final-project"
 author: "Shaina Trevino"
 date: "5/16/2019"
-output: html_document
+output: 
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -139,8 +140,7 @@ The `map` variants discussed above all take a single...
 ```
 
 
-#### * At least one {purrr} function outside the basic `map` family (`walk_*`, 
-  `reduce`, `modify_*`, etc.) 
+#### * At least one {purrr} function outside the basic `map` family (`walk_*`, `reduce`, `modify_*`, etc.) 
 
 The `map()` variants discussed above all return an output (either an atomic vector or list). However, sometimes you don't need to return an atomic vector or list, but iteration would still be helpful.
   
