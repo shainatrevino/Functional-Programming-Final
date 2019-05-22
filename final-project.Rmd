@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(rio)
 library(tidyverse)
+library(broom)
 ```
 
 ## Importing data
@@ -39,7 +40,7 @@ What is Functional Programming
 
 ## How to use `purrr::map`!
 
-* More than one variant of `purrr::map` is used 
+#### * More than one variant of `purrr::map` is used 
 
 LIST ALL VARIANTS OF PURRR:MAP AND EXPLAIN DIFFERENCES - SHOW 2 TYPES
 
@@ -92,16 +93,53 @@ means
 
 means <- map_dbl(d, ~ mean(.x, na.rm = TRUE))
 means
+
+
+```
+
+Can also use map_df to return data frame instead of atomic vector. 
+
+Say we want to return data frame of mean and standard deviations of each column
+
+```{r map-df}
+#you would expect this to work, but doesn't because only the last line in the function is being evaluated and printed
+map_df(d, function(x) {
+  mean(x, na.rm = TRUE)
+  sd(x, na.rm = TRUE)
+})
+
+column_names <- colnames(d)
+#need to instead
+map_df(d, function(x) {
+  summarize(d, mean = mean(x, na.rm = TRUE),
+            sd = sd(x, na.rm = TRUE))
+}, .id = "column_names")
+
+#or you could do this in two separate steps, using map for looping the functions through vectors then putting vectors into dataframe
+mean <- map(d, ~mean(.x, na.rm = TRUE))
+sd <- map(d, ~sd(.x, na.rm = TRUE))
+#combine vectors
+cv <- c(mean, sd, recursive = TRUE)
+#change attributes
+attr(cv, "dim") <- c(6, 2) #6 variables in two columns (mean and sd)
+colnames(cv) <- c("mean", "sd")
+#transform to dataframe
+data.frame(cv, row.names = column_names)
 ```
 
   
-* At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
+#### * At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
 
 EXPLAIN BOTH MAP 2 AND PMAP AND SHOW HOW PMAP WORKS WITH PLOT (BEFORE WALK? - SEE MIDTERM)
 
 The `map` variants discussed above all take a single...
 
-* At least one {purrr} function outside the basic `map` family (`walk_*`, 
+```{r parallel}
+
+```
+
+
+#### * At least one {purrr} function outside the basic `map` family (`walk_*`, 
   `reduce`, `modify_*`, etc.) 
 
 The `map()` variants discussed above all return an output (either an atomic vector or list). However, sometimes you don't need to return an atomic vector or list, but iteration would still be helpful.
@@ -123,19 +161,85 @@ list.files("data")
   
 EXPLAIN ALL (MOSTLY WALK) AND SHOW HOW IT IS USED - FOR PLOT EXAMPLE - SEE MIDTERM
 
-* At least one use case of `purrr::nest %>% mutate()` 
+#### * At least one use case of `purrr::nest %>% mutate()` 
 
-EXPLAIN LIST COLUMNS AND USE FOR GROUPING STATS (e.g., group by drug and year then calculate age of use etc.) - POSSIBLY ON MIDTERM OR MACHINE LEARNING
+EXPLAIN LIST COLUMNS AND USE FOR GROUPING STATS (e.g., group by drug and year then calculate age of use etc.)
+
+```{r nest-mutate1}
+dat <- recent_drug %>% 
+  select(-1:-2, -age_stim) %>% 
+  pivot_longer(cols = age_cocaine:age_marijuana, names_to = c("dis", "drug"), names_sep = "_") %>% 
+  select(-dis) %>% 
+  rename(age_use = value) %>% 
+  filter(!is.na(age_use)) %>% 
+  mutate(mental_health = ifelse(mental_health == "Yes", "Yes", "No"),
+         sex = fct_relevel(sex, ref = "Male"),
+         mental_health = fct_relevel(mental_health, ref = "No"))
+
+#fit one model per drug and see coefficients
+by_drug_coefs <- dat %>% 
+  group_by(drug) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
+         coef = map(model, ~tidy(.x))) %>% 
+  unnest(coef)
+
+#Look at model fit stats per drug model - will be bad
+by_drug_fit <- dat %>% 
+  group_by(drug) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
+         fit = map(model, ~glance(.x))) %>% 
+  unnest(fit)
+
+#mean age of use for males and females in first model
+by_drug_sex <- dat %>% 
+  group_by(drug) %>% 
+  nest() %>% 
+  mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
+         coefs = map(model, coef),
+         males = map_dbl(coefs, 1),
+         females = males + map_dbl(coefs, 2)) %>% 
+  select(drug, males, females)
+
+#fit multiple models by year
+by_drug_models <- dat %>% 
+  group_by(drug) %>% 
+  nest() %>% 
+  mutate(m1 = map(data, ~lm(age_use ~ sex, data = .x)),
+         m2 = map(data, ~lm(age_use ~ sex + mental_health, data = .x)),
+         m3 = map(data, ~lm(age_use ~ sex * mental_health, data = .x)))
+
+
+```
+
+
+```{r nest-mutate, eval = FALSE, include = FALSE}
+d_long <- drug_by_year %>% 
+  select(-V1, -ethnicity) %>% 
+  mutate(year = factor(year),
+         drug = factor(drug),
+         sex = factor(sex),
+         response = factor(response))
+
+by_year_drug <- d_long %>% 
+  group_by(year, drug, count) %>% 
+  nest() %>% 
+  mutate(count = map(data, ~mutate(.x, count = n())))
+```
+
+
+
 
 
 ## Requirements per syllabus
 
 * *No code is used repetitively (no more than twice)*
 * More than one variant of `purrr::map` is used 
-* At least one {purrr} function outside the basic `map` family (`walk_*`, 
-  `reduce`, `modify_*`, etc.) 
+* At least one {purrr} function outside the basic `map` family (`walk_*`, `reduce`, `modify_*`, etc.) 
 * At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
 * At least one use case of `purrr::nest %>% mutate()` 
+
 * At least two custom functions 
 	+ Each function must be "pure" unless it is clear that it should have side 
 	  effects (e.g., a plotting function)
