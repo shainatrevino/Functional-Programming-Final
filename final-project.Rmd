@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(rio)
+library(tidyverse)
 ```
 
 ## Importing data
@@ -30,20 +31,97 @@ recent_drug <- import(here("data", "2015_drug_dep.csv"),
 
 # Tutorial
 
+## Introduction
+
+What is looping/iterating
+
+What is Functional Programming
+
 ## How to use `purrr::map`!
 
 * More than one variant of `purrr::map` is used 
 
 LIST ALL VARIANTS OF PURRR:MAP AND EXPLAIN DIFFERENCES - SHOW 2 TYPES
 
-* At least one {purrr} function outside the basic `map` family (`walk_*`, 
-  `reduce`, `modify_*`, etc.) 
+1. purrr:map is a functional. It takes a vector and a function as an input, runs the function for each element in the vector, and then returns a list.
+
+  * It is loaded in the tidyverse
   
-EXPLAIN ALL (MOSTLY WALK) AND SHOW HOW IT IS USED - FOR PLOT EXAMPLE - SEE MIDTERM
+  * can override return of list and instead return an atomic vector by using variants of map:
+  
+    * `map_dbl` returns vector of type double
+    
+    * `map_chr` returns a vector of type character
+    
+    * `map_lgl` returns a vector of type logical (e.g., `TRUE` or `FALSE`)
+    
+    * `map_int` returns a vector of type integer
+    
+
+```{r map-ex}
+v <- c(1.85, 2.07, 3.71, 4.21, 5.36)
+#takes vector and rounds up - returns list
+map(v, round)
+#return vector of type double
+map_dbl(v, round)
+#return vector as character
+map_chr(v, round)
+
+#return vector of type logical - is each element of type double
+map_lgl(v, is.double)
+
+#return vector of type integer - how many elements are in each element - here it is only 1
+map_int(v, length)
+```
+
+Since `map` requires a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through dataframes. 
+
+For example, say we have this data (EXPLAIN DATA) and we want to calculate mean for age of first use and depression sum. Since there is quite a bit of missing data, we need to add arguments to the mean function.  
+
+We would do so by creating an inline anonymous function
+
+```{r summarize}
+#mean and sd
+d <- recent_drug %>% 
+  select(age_cocaine:sum_depression)
+
+means <- map_dbl(d, function(x) mean(x, na.rm = TRUE)) #explain x is a place holder
+means
+
+#same result, less code.
+
+means <- map_dbl(d, ~ mean(.x, na.rm = TRUE))
+means
+```
+
   
 * At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
 
 EXPLAIN BOTH MAP 2 AND PMAP AND SHOW HOW PMAP WORKS WITH PLOT (BEFORE WALK? - SEE MIDTERM)
+
+The `map` variants discussed above all take a single...
+
+* At least one {purrr} function outside the basic `map` family (`walk_*`, 
+  `reduce`, `modify_*`, etc.) 
+
+The `map()` variants discussed above all return an output (either an atomic vector or list). However, sometimes you don't need to return an atomic vector or list, but iteration would still be helpful.
+  
+Very useful variant of `map()` is `walk()`, specifically `walk2()` which can be used to save objects to a disk. Note: when saving something to a disk you have to provide 2 inputs: the object and the file path - this requires parallel iteration.   
+
+```{r walk-ex, eval = FALSE}
+by_year <- split(drug_by_year, drug_by_year$year)
+paths <- here("data", paste0("year-", names(by_year), ".csv"))
+walk2(by_year, paths, write.csv)
+#splits our longitudinal dataset by year and saves separate csv file for each year with the title ("year-2005") in the data folder of the working directory
+
+list.files("data")
+```
+
+`reduce()` takes a vector of any length as it's input and returns a vector of length 1. For example `reduce(1:4, f)` returns `f(f(f(1, 2), 3), 4)`. 
+
+`modify()` returns the same type of input it is provided. For example, `modify(df, f)` will run the function on each column of the dataframe and return a dataframe as the output.
+  
+EXPLAIN ALL (MOSTLY WALK) AND SHOW HOW IT IS USED - FOR PLOT EXAMPLE - SEE MIDTERM
 
 * At least one use case of `purrr::nest %>% mutate()` 
 
