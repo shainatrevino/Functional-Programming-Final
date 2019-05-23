@@ -125,7 +125,7 @@ cv <- c(mean, sd, recursive = TRUE)
 attr(cv, "dim") <- c(6, 2) #6 variables in two columns (mean and sd)
 colnames(cv) <- c("mean", "sd")
 #transform to dataframe
-data.frame(cv, row.names = column_names)
+cv <- data.frame(cv, row.names = column_names)
 ```
 
   
@@ -133,11 +133,38 @@ data.frame(cv, row.names = column_names)
 
 EXPLAIN BOTH MAP 2 AND PMAP AND SHOW HOW PMAP WORKS WITH PLOT (BEFORE WALK? - SEE MIDTERM)
 
-The `map` variants discussed above all take a single...
+The `map` variants discussed above all take a single input to iterate (i.e., call the function on), but sometimes you need to iterate through more than just one input. 
+
+This can be accomplished with `map2_` or `pmap_`
+
+* `map2_` iterates over two inputs (e.g., two vectors)
+
+* `pmap_` iterates over any number of inputs
+
+For example, say you wanted to calculate a weighted mean from a vector of data values and a vector of weights.
+
 
 ```{r parallel}
+data <- d %>% filter(!is.na(age_marijuana))
+obs <- map(1:1715, ~rnorm(n = 20, mean = 17.289, sd = 4.558)) #1715 obs for marijuana, mean and sd from table above
+wts <- map(1:1715, ~rpois(20, 5))
 
+#this doesnt work because the weight argument is expecting a single value to apply to all observations. 
+#map_dbl(obs, ~weighted.mean(.x, w = wts)) - had to comment to knit
+
+#Instead we need a parallel iteration to run the function on each vector of observation with each corresponding vector of weights. 
+map2_dbl(obs, wts, ~weighted.mean(.x, .y))
+#make note of .x and .y and explain
+#we now have a weighted mean score for each participant
 ```
+
+`pmap()` can be supplied any number of inputs that you provide in a single list. This list can contain any number of inputs or arguments. 
+
+`pmap()` is very useful when working with dataframes in which there are many vectors of the same length that can be provided as inputs (i.e., columns)
+
+You can name the inputs in the list which is helpful when iterating through complex functions
+
+*We will show you how to use `pmap` to iterate and build custom plots in a later blog post*
 
 
 #### * At least one {purrr} function outside the basic `map` family (`walk_*`, `reduce`, `modify_*`, etc.) 
@@ -158,8 +185,7 @@ list.files("data")
 `reduce()` takes a vector of any length as it's input and returns a vector of length 1. For example `reduce(1:4, f)` returns `f(f(f(1, 2), 3), 4)`. 
 
 `modify()` returns the same type of input it is provided. For example, `modify(df, f)` will run the function on each column of the dataframe and return a dataframe as the output.
-  
-EXPLAIN ALL (MOSTLY WALK) AND SHOW HOW IT IS USED - FOR PLOT EXAMPLE - SEE MIDTERM
+
 
 #### * At least one use case of `purrr::nest %>% mutate()` 
 
