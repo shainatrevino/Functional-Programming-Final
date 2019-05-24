@@ -29,7 +29,7 @@ recent_drug <- import(here("data", "2015_drug_dep.csv"),
 `drug_by_year` has data from 2005 to 2015 and reports on the people who responded yes to using illicit substances in the last year. 
 
 `recent_drug` has data from 2015-2016 (most recent NHANES data available) and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. 
-  * `age_stim` is a composite measure of age of first meth and cocaine use (e.g., age of first stimulant use)
+* `age_stim` is a composite measure of age of first meth and cocaine use (e.g., age of first stimulant use)
 
 # Tutorial
 
@@ -41,16 +41,58 @@ What is Functional Programming
 
 ## How to use `purrr::map`!
 
-#### * More than one variant of `purrr::map` is used 
+#### What is `purrr::map`
 
-LIST ALL VARIANTS OF PURRR:MAP AND EXPLAIN DIFFERENCES - SHOW 2 TYPES
+`purrr:map()` is a functional. It takes a vector (or list of vectors) and a function as it's input, runs the function for each element in the vector, and then returns a list.
 
-1. purrr:map is a functional. It takes a vector and a function as an input, runs the function for each element in the vector, and then returns a list.
-
-  * It is loaded in the tidyverse
+  * The `purrr` package is loaded when you load `tidyverse`
   
-  * can override return of list and instead return an atomic vector by using variants of map:
+For example, suppose you have a list that contains two other numbered lists with 5 values rounded to two decimal places and you wanted to round them all to the nearest integer.
+
+Our list looks like this:
+
+```{r create-list}
+#creating list from two vectors of decimal values
+v <- c(1.85, 2.07, 3.71, 4.21, 5.36)
+v1 <- c(1.23, 2.53, 3.44, 4.71, 5.96)
+l <- list(v, v1)
+l
+```
+
+If we only had 1 vector to round, we could use the `round()` function
+
+```{r ex-round}
+round(v)
+```
+
+However, this does not work when supplied our list
+
+```{r error-code, eval = FALSE}
+round(l)
+#FIGURE OUT HOW TO KEEP CODE AND ERROR WHEN KNIT FILE, BUT KNIT DOESNT WORK
+```
+
+Instead we need a function that will apply `round()` to every element in our list. Thats where we can use `map()`
+
+```{r map-round}
+#takes vector and rounds up
+map(l, round)
+```
+
+Notice how the output from `map()` is a list, and the `round()` function has been applied to each element in the list. 
+
+You could also use `map()` with a single vector, however in this case the output is the same as when solely using the `round()` function. 
+
+```{r round-single-vec}
+map(v, round)
+```
+
+However, as mentioned above, this output is a list. When you have an atomic vector as an input or a list of numbered lists of length 1, you can coerce your output to an atomic vector.
+
+#### `map()` variants
   
+You can override the return of list and instead return an atomic vector by using variants of `map()`:
+
     * `map_dbl` returns vector of type double
     
     * `map_chr` returns a vector of type character
@@ -59,55 +101,93 @@ LIST ALL VARIANTS OF PURRR:MAP AND EXPLAIN DIFFERENCES - SHOW 2 TYPES
     
     * `map_int` returns a vector of type integer
     
+For example, if we use `map_dbl` or `map_chr` for our previous example, we will have the same results, but the output will be different types. 
 
 ```{r map-ex}
-v <- c(1.85, 2.07, 3.71, 4.21, 5.36)
-#takes vector and rounds up - returns list
-map(v, round)
 #return vector of type double
 map_dbl(v, round)
 #return vector as character
 map_chr(v, round)
+```
 
-#return vector of type logical - is each element of type double
+Notice how the numbers are actually the same, but `map_dbl` returns a numeric vector, whereas `map_chr` returns a character vector.
+
+What if we wanted to know if each element in our vector is of type double, we would want to return a logical vector that tells us if the value is double (e.g., `TRUE`) or not (e.g., `FALSE`)
+
+```{r map-ex1}
+#return vector of type logical
 map_lgl(v, is.double)
+```
 
-#return vector of type integer - how many elements are in each element - here it is only 1
+This logical vector tells us that each element is of type double.
+
+`map_int` returns an integer vector (i.e., whole numbers), therefore, we can use it to ask questions like: what is the length of each element in my vector?
+
+```{r map-ex2}
+#return vector of type integer
 map_int(v, length)
 ```
 
-Since `map` requires a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through dataframes. 
+In this example, there is only 1 value per element in the vector, so all the lengths are 1.
 
-For example, say we have this data (EXPLAIN DATA) and we want to calculate mean for age of first use and depression sum. Since there is quite a bit of missing data, we need to add arguments to the mean function.  
+If we use the same code on our list object, it should tell us how many numbers are in each element of the list.
 
-We would do so by creating an inline anonymous function
+```{r map-ex2-b}
+map_int(l, length)
+```
 
-```{r summarize}
+There are 2 elements in our list and each has 5 values. 
+
+### Using `map()` in data frames
+
+Since `map` can take a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through dataframes. 
+
+EXPLAIN DATA
+
+For example, say we want to use the NHANES data to calculate the mean for age of first use and depression scores. Since there is quite a bit of missing values in this data set, so we will need to add arguments to the mean function to ignore the missing data. 
+
+Our data looks like this
+
+```{r tidy-data-map-ex, echo = FALSE}
 #mean and sd
 d <- recent_drug %>% 
   select(age_cocaine:sum_depression)
-
-means <- map_dbl(d, function(x) mean(x, na.rm = TRUE)) #explain x is a place holder
-means
-
-#same result, less code.
-
-means <- map_dbl(d, ~ mean(.x, na.rm = TRUE))
-means
-
-
+d
 ```
 
-Can also use map_df to return data frame instead of atomic vector. 
 
-Say we want to return data frame of mean and standard deviations of each column
+To add arguments to a function within `map()`, we need to create an inline anonymous function where your function is first specified with `function(x)` where `x` is a place holder for what the function is going to run on. Then you write you function that you want to run on each element (`x`). 
+
+Therefore, to calculate the means, our `map()` function would look like this
+
+```{r summarize}
+means <- map_dbl(d, function(x) mean(x, na.rm = TRUE)) 
+means
+```
+
+There is also a shortcut you can use within `map()` functions where you don't have to specify `function(x)`. 
+
+```{r summarize1}
+means <- map_dbl(d, ~ mean(.x, na.rm = TRUE))
+means
+```
+
+These two examples are exactly the same, the latter just has less code. `function(x)` is implied with the `~` and then you just have to use `.x` instead of `x` for what you are iterating over.
+
+#### `map_df()`
+
+There is another `map()` variant that is useful when working with dataframes, `map_df()`.
+
+You can use `map_df()` to return data frame as the output instead of an atomic vector. 
+
+For example, say we want to return data frame of the means and standard deviations of each column within our data frame. 
 
 ```{r map-df}
 #you would expect this to work, but doesn't because only the last line in the function is being evaluated and printed
 map_df(d, function(x) {
   mean(x, na.rm = TRUE)
   sd(x, na.rm = TRUE)
-})
+}) #note curly braces for longer functions
 
 column_names <- colnames(d)
 #need to instead
