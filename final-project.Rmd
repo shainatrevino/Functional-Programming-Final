@@ -335,6 +335,98 @@ by_year_drug <- d_long %>%
 ```
 
 
+Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variabe
+
+Now let's take the age function we have just created (evaluating whether age of first marijuana use was before or after the age of 18) and use it as a grouping variable to examine the mean, standard deviation, and min/max values for the age of first use variable in the "recent_drug,csv" data set. 
+1) first we name the data set, the outcome variable, and the grouping variable. We will use these to call up this info when applying the completed function.
+2) Next we use "enquo", part of the 'dplyr' package which should be loaded if you have not already done so, to select the variables we are planning to use in defining the function. Enquo helps R search for these variables within our data frame instead of searching the global environment for them. When using enquo the "!!" symbol will be neccessary anytime we want to refer back to these variables that we are defining here in the first steps of creating our function. EX. instead of writting mean(our_var_name) as usual we will need to write mean(!!our_var_name).
+3) The %>% symbol is a pipe operator and is used to feed each piece of our function through the proceeding statement, so that at each step the result of the previous argument is fed through the following argument. Ex. dataset %>% step1 %>% step2.
+4)"group_by" tells R to divide the outcome into a serperate row for each category of the grouping variable. 
+5) "summarize" is the step where we envoke the operations and calculations on our outcome variable. The results of the summarize step should be seperated thanks to the group_by statement in step 4, 
+
+The function can now be stored and run on our data. We can examine the mean first age of use by any of the other variables in our dataset, including the 18 or below variable we created in the first function we created. Other interesting grouping variables might be income, ethnicity, or mental health status. If you decide you want to group our outcome first by two variables this is explored in function 3.
+
+
+
+```{r eval=FALSE}
+library(dplyr)
+
+fun2_mean1group <- function(data, cat_var, num_var){
+  cat_var <- enquo(cat_var)
+  num_var <- enquo(num_var)
+  data %>% #if (cat_var2 < 17)
+    group_by(!!cat_var) %>%
+    summarize(mean = mean(!!num_var, na.rm = TRUE), sd = sd(!!num_var, na.rm = TRUE), min = min(!!num_var, na.rm = TRUE), max = max(!!num_var, na.rm = TRUE))
+}
+
+fun2_mean1group(recent_drug, mental_health, age_marijuana)
+#fun2_mean1group(iris, Species, Sepal.Width)
+```
+
+Function 3: Two grouping variables 
+5) If you wish to add a second "group_by" variable start by including a variable name in the Function itself, and include an additional enquo command
+6) Now in the "group_by" command include a second variable using the "!!" as before. ex: group_by(!!group_var1, !!group_var2)
+7) after the "summarize" command include an additional %>% and add the "spread" command naming the varable as before (!!group_var1), and indicating the outcome you wish to report. 
+
+
+```{r}
+fun3_mean2groups <- function(x, cat_var1, cat_var2, outcome_var){
+  cat_var1 <- enquo(cat_var1)
+  cat_var2 <- enquo(cat_var2)
+  num_var <- enquo(outcome_var)
+  
+  x %>%
+    group_by(!!cat_var1, !!cat_var2) %>%
+    summarize(mean = mean(!!num_var, na.rm = TRUE),
+              sd = sd(!!num_var, na.rm = TRUE), 
+              min = min(!!num_var, na.rm = TRUE), 
+              max = max(!!num_var, na.rm = TRUE))%>%
+    spread(!!cat_var1, mean)
+}
+
+fun3_mean2groups(recent_drug, mental_health, income, age_marijuana)
+#fun3_mean2groups(iris, Species, Petal.Width, Sepal.Width)
+
+```
+
+Function 4: Creating a Function Using GGPlot
+
+To plot our outcome variable, in this case age of first marijuana use, we can create a function which will plot the age of first grouped by variable of interst. To test our function we will use "income" as category to group age of first marijuana use against on the x-axis. 
+
+1) Once again we begin by naming the variables our function will use to pull data from. In this case we will include a data variable to name the dataset, "x" for our x-axis variable, and "y" for our y-axis variable. 
+2) Next in the open bracket we will include our plotting function in this case ggplot, and we will name the dataset and x/y variables so they match the variable names we will use in the final function. 
+3) Now we add the method we will use to plot, choosing one of the ggplot options. In this case we selected 'geom_point' which will provide a number of dots along the y-axis for each category. A color can also be selected. Ex. geom_point(color = "magenta"). 
+
+
+```{r eval=FALSE}
+fun4_plot <- function(data, x, y) {
+    ggplot(data, aes_string(x, y)) +
+      geom_point(color = "blue")
+}
+
+fun4_plot(recent_drug, "income", "age_marijuana")
+
+```
+
+Fununction 5: Plotting Mean, SD, Min, & Max
+
+To plot the summary data for our age of first use variables (age_marijuan, age_meth, age_heroin, and age_cocaine) found in our "recent_drug.csv" data we can create a function which will plot all of our summary variables (mean, sd, min, and max) at once.
+
+```{r eval=FALSE}
+#not working can delete
+  fun5_plotsummary <- function(filename) {
+  dat <- read.csv(file = filename, header = FALSE)
+  mean_age <- apply(dat, 2, mean, na.rm = TRUE)
+  plot(mean_age)
+  sd_age <- apply(dat, 2, sd, na.rm = TRUE)
+  max_age <- apply(dat, 2, max, na.rm = TRUE)
+  plot(max_age)
+  min_age <- apply(dat, 2, min, na.rm = TRUE)
+  plot(min_age)
+}
+
+fun4_plot(recent_drug)
+```
 
 
 
