@@ -144,7 +144,7 @@ Since `map` can take a vector for an input, and data frames are lists containing
 
 EXPLAIN DATA
 
-For example, say we want to use the NHANES data to calculate the mean for age of first use and depression scores. Since there is quite a bit of missing values in this data set, so we will need to add arguments to the mean function to ignore the missing data. 
+For example, say we want to use the NHANES data to calculate the mean for age of first use for each drug and depression scores. Since there is quite a bit of missing values in this data set, so we will need to add arguments to the mean function to ignore the missing data. 
 
 Our data looks like this
 
@@ -183,20 +183,25 @@ You can use `map_df()` to return data frame as the output instead of an atomic v
 For example, say we want to return data frame of the means and standard deviations of each column within our data frame. 
 
 ```{r map-df}
-#you would expect this to work, but doesn't because only the last line in the function is being evaluated and printed
+#you would expect this to work, but doesn't because only the last line in the function is being evaluated and printed, so we only get sds
 map_df(d, function(x) {
   mean(x, na.rm = TRUE)
   sd(x, na.rm = TRUE)
 }) #note curly braces for longer functions
 
-column_names <- colnames(d)
-#need to instead
+column_names <- colnames(d) #creating a vector for the column names to add to dataframe
+
+#need to instead use summarize to summarize each vector
 map_df(d, function(x) {
   summarize(d, mean = mean(x, na.rm = TRUE),
             sd = sd(x, na.rm = TRUE))
 }, .id = "column_names")
+```
 
-#or you could do this in two separate steps, using map for looping the functions through vectors then putting vectors into dataframe
+Or you could do the above in two separate steps, using map to loop the functions through vectors and then put the vectors into a data frame
+
+```{r map-df1}
+#create vectors by looping functions through data frames
 mean <- map(d, ~mean(.x, na.rm = TRUE))
 sd <- map(d, ~sd(.x, na.rm = TRUE))
 #combine vectors
@@ -206,12 +211,11 @@ attr(cv, "dim") <- c(6, 2) #6 variables in two columns (mean and sd)
 colnames(cv) <- c("mean", "sd")
 #transform to dataframe
 cv <- data.frame(cv, row.names = column_names)
+cv
 ```
 
   
-#### * At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
-
-EXPLAIN BOTH MAP 2 AND PMAP AND SHOW HOW PMAP WORKS WITH PLOT (BEFORE WALK? - SEE MIDTERM)
+#### Parallel iteration (e.g., `map2_*`, `pmap_*`) 
 
 The `map` variants discussed above all take a single input to iterate (i.e., call the function on), but sometimes you need to iterate through more than just one input. 
 
@@ -223,9 +227,8 @@ This can be accomplished with `map2_` or `pmap_`
 
 For example, say you wanted to calculate a weighted mean from a vector of data values and a vector of weights.
 
-
 ```{r parallel}
-data <- d %>% filter(!is.na(age_marijuana))
+#simulate data from mean distribution and create weights
 obs <- map(1:1715, ~rnorm(n = 20, mean = 17.289, sd = 4.558)) #1715 obs for marijuana, mean and sd from table above
 wts <- map(1:1715, ~rpois(20, 5))
 
@@ -247,7 +250,7 @@ You can name the inputs in the list which is helpful when iterating through comp
 *We will show you how to use `pmap` to iterate and build custom plots in a later blog post*
 
 
-#### * At least one {purrr} function outside the basic `map` family (`walk_*`, `reduce`, `modify_*`, etc.) 
+#### Other `purrr` functions (e.g., `walk_*`, `reduce`, `modify_*`) 
 
 The `map()` variants discussed above all return an output (either an atomic vector or list). However, sometimes you don't need to return an atomic vector or list, but iteration would still be helpful.
   
@@ -267,9 +270,20 @@ list.files("data")
 `modify()` returns the same type of input it is provided. For example, `modify(df, f)` will run the function on each column of the dataframe and return a dataframe as the output.
 
 
-#### * At least one use case of `purrr::nest %>% mutate()` 
+#### Using `mutate` withing `nest()`
 
-EXPLAIN LIST COLUMNS AND USE FOR GROUPING STATS (e.g., group by drug and year then calculate age of use etc.)
+Explain list columns
+
+You can use `group_by()` and `nest()` to split your data into list columns then apply `mutate` to:
+
+1. fit models by the grouping factor and extract coefficients
+
+2. compare model fits
+
+3. extract means from models fit with two groups
+
+4. fit multiple different models for each grouping factor and view coefficients
+
 
 ```{r nest-mutate1}
 dat <- recent_drug %>% 
@@ -321,6 +335,7 @@ by_drug_models <- dat %>%
 
 
 ```{r nest-mutate, eval = FALSE, include = FALSE}
+#disregard
 d_long <- drug_by_year %>% 
   select(-V1, -ethnicity) %>% 
   mutate(year = factor(year),
@@ -331,9 +346,10 @@ d_long <- drug_by_year %>%
 by_year_drug <- d_long %>% 
   group_by(year, drug, count) %>% 
   nest() %>% 
-  mutate(count = map(data, ~mutate(.x, count = n())))
+  mutate(count = map(data, ~mutate(.x, count = n()))) #this doesnt run
 ```
 
+## Functions
 
 Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variabe
 
@@ -428,23 +444,4 @@ To plot the summary data for our age of first use variables (age_marijuan, age_m
 fun4_plot(recent_drug)
 ```
 
-
-
-## Requirements per syllabus
-
-* *No code is used repetitively (no more than twice)*
-* More than one variant of `purrr::map` is used 
-* At least one {purrr} function outside the basic `map` family (`walk_*`, `reduce`, `modify_*`, etc.) 
-* At least one instance of parallel iteration (e.g., `map2_*`, `pmap_*`) 
-* At least one use case of `purrr::nest %>% mutate()` 
-
-* At least two custom functions 
-	+ Each function must be "pure" unless it is clear that it should have side 
-	  effects (e.g., a plotting function)
-  + Each function must do exactly one thing
-  + The functions **may** replicate the behavior of a base function - as noted 
-    above this is about practicing the skills you learn in class
-* Code is fully reproducible and housed on GitHub 
-* No obvious errors in chosen output format 
-* Deployed on the web and shareable through a link 
 
