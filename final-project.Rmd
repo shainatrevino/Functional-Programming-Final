@@ -6,6 +6,8 @@ output:
   html_document: default
 ---
 
+Each chunk was labelled descriptively and examples were thorough and easy to follow. 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(here)
@@ -48,6 +50,8 @@ What is Functional Programming
   * The `purrr` package is loaded when you load `tidyverse`
   
 For example, suppose you have a list that contains two other numbered lists with 5 values rounded to two decimal places and you wanted to round them all to the nearest integer.
+
+#this is a really clear explanation of purr::map
 
 Our list looks like this:
 
@@ -101,13 +105,15 @@ You can override the return of list and instead return an atomic vector by using
     
     * `map_int` returns a vector of type integer
     
+#Once again, really clear and straightforward examples. 
+    
 For example, if we use `map_dbl` or `map_chr` for our previous example, we will have the same results, but the output will be different types. 
 
 ```{r map-ex}
 #return vector of type double
 map_dbl(v, round)
 #return vector as character
-map_chr(v, round)
+map_chr(v, round) #one thing you could show here is that can you specfiy how many decimal places to round to. 
 ```
 
 Notice how the numbers are actually the same, but `map_dbl` returns a numeric vector, whereas `map_chr` returns a character vector.
@@ -152,7 +158,7 @@ Our data looks like this
 #mean and sd
 d <- recent_drug %>% 
   select(age_cocaine:sum_depression)
-d
+d #for the tutorial it might be helpful to name the dataset something descriptive like age_drug_use
 ```
 
 
@@ -200,6 +206,8 @@ map_df(d, function(x) {
 
 Or you could do the above in two separate steps, using map to loop the functions through vectors and then put the vectors into a data frame
 
+#I like that you showed and described two different ways of doing the same thing. 
+
 ```{r map-df1}
 #create vectors by looping functions through data frames
 mean <- map(d, ~mean(.x, na.rm = TRUE))
@@ -239,6 +247,8 @@ wts <- map(1:1715, ~rpois(20, 5))
 map2_dbl(obs, wts, ~weighted.mean(.x, .y))
 #make note of .x and .y and explain
 #we now have a weighted mean score for each participant
+
+#for the purpose of the tutorial it might be helpful to use head() so that 1,000 numbers don't print out! Not necessary, but just a minor suggestion! 
 ```
 
 `pmap()` can be supplied any number of inputs that you provide in a single list. This list can contain any number of inputs or arguments. 
@@ -284,7 +294,7 @@ You can use `group_by()` and `nest()` to split your data into list columns then 
 
 4. fit multiple different models for each grouping factor and view coefficients
 
-
+# I get an error message that says pivot_longer could not be found. I found online that it's a part of tidyverse but it's still not running. 
 ```{r nest-mutate1}
 dat <- recent_drug %>% 
   select(-1:-2, -age_stim) %>% 
@@ -354,10 +364,17 @@ by_year_drug <- d_long %>%
 Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variabe
 
 Now let's take the age function we have just created (evaluating whether age of first marijuana use was before or after the age of 18) and use it as a grouping variable to examine the mean, standard deviation, and min/max values for the age of first use variable in the "recent_drug,csv" data set. 
+
 1) first we name the data set, the outcome variable, and the grouping variable. We will use these to call up this info when applying the completed function.
+
 2) Next we use "enquo", part of the 'dplyr' package which should be loaded if you have not already done so, to select the variables we are planning to use in defining the function. Enquo helps R search for these variables within our data frame instead of searching the global environment for them. When using enquo the "!!" symbol will be neccessary anytime we want to refer back to these variables that we are defining here in the first steps of creating our function. EX. instead of writting mean(our_var_name) as usual we will need to write mean(!!our_var_name).
+
 3) The %>% symbol is a pipe operator and is used to feed each piece of our function through the proceeding statement, so that at each step the result of the previous argument is fed through the following argument. Ex. dataset %>% step1 %>% step2.
+
+#I like that you explain the pipe operator but this may be better somewhere else because the pipe has been used throughout the code so far. 
+
 4)"group_by" tells R to divide the outcome into a serperate row for each category of the grouping variable. 
+
 5) "summarize" is the step where we envoke the operations and calculations on our outcome variable. The results of the summarize step should be seperated thanks to the group_by statement in step 4, 
 
 The function can now be stored and run on our data. We can examine the mean first age of use by any of the other variables in our dataset, including the 18 or below variable we created in the first function we created. Other interesting grouping variables might be income, ethnicity, or mental health status. If you decide you want to group our outcome first by two variables this is explored in function 3.
@@ -372,16 +389,24 @@ fun2_mean1group <- function(data, cat_var, num_var){
   num_var <- enquo(num_var)
   data %>% #if (cat_var2 < 17)
     group_by(!!cat_var) %>%
-    summarize(mean = mean(!!num_var, na.rm = TRUE), sd = sd(!!num_var, na.rm = TRUE), min = min(!!num_var, na.rm = TRUE), max = max(!!num_var, na.rm = TRUE))
+    summarize(mean = mean(!!num_var, na.rm = TRUE),
+              sd = sd(!!num_var, na.rm = TRUE),
+              min = min(!!num_var, na.rm = TRUE),
+              max = max(!!num_var, na.rm = TRUE)) # i put these on separate lines for clarity
 }
 
 fun2_mean1group(recent_drug, mental_health, age_marijuana)
+#when I run this there is a row for NAs, it might be helpful to know why that is. Or it might be better to remove it all together. 
+
+
 #fun2_mean1group(iris, Species, Sepal.Width)
 ```
 
 Function 3: Two grouping variables 
 5) If you wish to add a second "group_by" variable start by including a variable name in the Function itself, and include an additional enquo command
+
 6) Now in the "group_by" command include a second variable using the "!!" as before. ex: group_by(!!group_var1, !!group_var2)
+
 7) after the "summarize" command include an additional %>% and add the "spread" command naming the varable as before (!!group_var1), and indicating the outcome you wish to report. 
 
 
@@ -401,6 +426,8 @@ fun3_mean2groups <- function(x, cat_var1, cat_var2, outcome_var){
 }
 
 fun3_mean2groups(recent_drug, mental_health, income, age_marijuana)
+#the NAS are here as well 
+
 #fun3_mean2groups(iris, Species, Petal.Width, Sepal.Width)
 
 ```
@@ -410,7 +437,9 @@ Function 4: Creating a Function Using GGPlot
 To plot our outcome variable, in this case age of first marijuana use, we can create a function which will plot the age of first grouped by variable of interst. To test our function we will use "income" as category to group age of first marijuana use against on the x-axis. 
 
 1) Once again we begin by naming the variables our function will use to pull data from. In this case we will include a data variable to name the dataset, "x" for our x-axis variable, and "y" for our y-axis variable. 
+
 2) Next in the open bracket we will include our plotting function in this case ggplot, and we will name the dataset and x/y variables so they match the variable names we will use in the final function. 
+
 3) Now we add the method we will use to plot, choosing one of the ggplot options. In this case we selected 'geom_point' which will provide a number of dots along the y-axis for each category. A color can also be selected. Ex. geom_point(color = "magenta"). 
 
 
@@ -430,6 +459,8 @@ To plot the summary data for our age of first use variables (age_marijuan, age_m
 
 ```{r eval=FALSE}
 #not working can delete
+#I see it says this doesn't work, but I think the issue is coming from the read.csv line. Sorry I'm not more helpful. 
+
   fun5_plotsummary <- function(filename) {
   dat <- read.csv(file = filename, header = FALSE)
   mean_age <- apply(dat, 2, mean, na.rm = TRUE)
