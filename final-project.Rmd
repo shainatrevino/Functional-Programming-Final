@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(rio)
 library(tidyverse)
+# excuse my dinasour-old R, to run pivot_longer, I have to reinstall the latest tidyverse and restart the R session 
+# devtools::install_github("tidyverse/tidyr")
 library(broom)
 ```
 
@@ -31,6 +33,8 @@ recent_drug <- import(here("data", "2015_drug_dep.csv"),
 `recent_drug` has data from 2015-2016 (most recent NHANES data available) and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. 
 * `age_stim` is a composite measure of age of first meth and cocaine use (e.g., age of first stimulant use)
 
+Nice descriptions!
+
 # Tutorial
 
 ## Introduction
@@ -42,7 +46,7 @@ What is Functional Programming
 ## How to use `purrr::map`!
 
 #### What is `purrr::map`
-
+# this is very educational!
 `purrr:map()` is a functional. It takes a vector (or list of vectors) and a function as it's input, runs the function for each element in the vector, and then returns a list.
 
   * The `purrr` package is loaded when you load `tidyverse`

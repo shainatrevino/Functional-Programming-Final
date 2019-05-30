@@ -6,9 +6,9 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+# neat document for the requirements and a roadmap!!!
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 ## Requirements per syllabus
 
 * No code is used repetitively (no more than twice)
