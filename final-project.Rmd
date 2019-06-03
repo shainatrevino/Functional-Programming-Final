@@ -287,7 +287,7 @@ You can use `group_by()` and `nest()` to split your data into list columns then 
 4. fit multiple different models for each grouping factor and view coefficients
 
 
-```{r nest-mutate1, error=TRUE}
+```{r nest-mutate1}
 #this would not run for me, can't find function pivot_longer
 dat <- recent_drug %>%
   select(-1:-2, -age_stim) %>%
