@@ -67,9 +67,11 @@ round(v)
 
 However, this does not work when supplied our list
 
-```{r error-code, eval = FALSE}
+```{r error-code, error=TRUE}
 round(l)
 #FIGURE OUT HOW TO KEEP CODE AND ERROR WHEN KNIT FILE, BUT KNIT DOESNT WORK
+
+#This should work, use error=TRUE
 ```
 
 Instead we need a function that will apply `round()` to every element in our list. Thats where we can use `map()`
@@ -286,12 +288,13 @@ You can use `group_by()` and `nest()` to split your data into list columns then 
 
 
 ```{r nest-mutate1}
-dat <- recent_drug %>% 
-  select(-1:-2, -age_stim) %>% 
-  pivot_longer(cols = age_cocaine:age_marijuana, names_to = c("dis", "drug"), names_sep = "_") %>% 
-  select(-dis) %>% 
-  rename(age_use = value) %>% 
-  filter(!is.na(age_use)) %>% 
+#this would not run for me, can't find function pivot_longer
+dat <- recent_drug %>%
+  select(-1:-2, -age_stim) %>%
+  pivot_longer(cols = age_cocaine:age_marijuana, names_to = c("dis", "drug"), names_sep = "_") %>%
+  select(-dis) %>%
+  rename(age_use = value) %>%
+  filter(!is.na(age_use)) %>%
   mutate(mental_health = ifelse(mental_health == "Yes", "Yes", "No"),
          sex = fct_relevel(sex, ref = "Male"),
          mental_health = fct_relevel(mental_health, ref = "No"))
