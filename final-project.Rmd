@@ -12,6 +12,9 @@ library(here)
 library(rio)
 library(tidyverse)
 library(broom)
+
+#May need to install new version of tidyr for pivot_longer to work
+#devtools::install_github("tidyverse/tidyr")
 ```
 
 ## Importing data
