@@ -349,7 +349,7 @@ by_drug_models <- dat %>%
 
 
 ```
-
+# TN this looks like a great way of explaining how mutate and nest can be useful together! I actually learned a lot by looking at the last piece of code, very useful! Sadly I was having trouble running the chunk because I kept running on an error 
 
 ```{r nest-mutate, eval = FALSE, include = FALSE}
 #disregard
@@ -361,10 +361,12 @@ d_long <- drug_by_year %>%
          response = factor(response))
 
 by_year_drug <- d_long %>% 
-  group_by(year, drug, count) %>% 
+  group_by(year, drug) %>% #Count is not in the data frame so I am removing it
   nest() %>% 
-  mutate(count = map(data, ~mutate(.x, count = n()))) #this doesnt run
+  mutate(count = map(data, ~mutate(.x, count = n()))) #this doesnt run #now it runs! I think "count" was in the group by by mistake 
 ```
+
+# TN: this was suuper useful! and I was able to run it, I like how you use mutate with nest to create a list of useful data frames! 
 
 ## Functions
 
