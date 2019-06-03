@@ -70,6 +70,7 @@ However, this does not work when supplied our list
 ```{r error-code, eval = FALSE}
 round(l)
 #FIGURE OUT HOW TO KEEP CODE AND ERROR WHEN KNIT FILE, BUT KNIT DOESNT WORK
+#My error was in Line 289, so it appeared to skip this part!
 ```
 
 Instead we need a function that will apply `round()` to every element in our list. Thats where we can use `map()`
@@ -144,7 +145,7 @@ Since `map` can take a vector for an input, and data frames are lists containing
 
 EXPLAIN DATA
 
-For example, say we want to use the NHANES data to calculate the mean for age of first use for each drug and depression scores. Since there is quite a bit of missing values in this data set, so we will need to add arguments to the mean function to ignore the missing data. 
+For example, say we want to use the NHANES data to calculate the mean for age of first use for each drug and depression score. Since there is quite a bit of missing values in this data set, so we will need to add arguments to the mean function to ignore the missing data. 
 
 Our data looks like this
 
@@ -156,7 +157,7 @@ d
 ```
 
 
-To add arguments to a function within `map()`, we need to create an inline anonymous function where your function is first specified with `function(x)` where `x` is a place holder for what the function is going to run on. Then you write you function that you want to run on each element (`x`). 
+To add arguments to a function within `map()`, we need to create an inline anonymous function where your function is first specified with `function(x)` where `x` is a place holder for what the function is going to run on. Then you write a function that you want to run on each element (`x`). 
 
 Therefore, to calculate the means, our `map()` function would look like this
 
@@ -270,7 +271,7 @@ list.files("data")
 `modify()` returns the same type of input it is provided. For example, `modify(df, f)` will run the function on each column of the dataframe and return a dataframe as the output.
 
 
-#### Using `mutate` withing `nest()`
+#### Using `mutate` within `nest()`
 
 Explain list columns
 
@@ -295,6 +296,7 @@ dat <- recent_drug %>%
   mutate(mental_health = ifelse(mental_health == "Yes", "Yes", "No"),
          sex = fct_relevel(sex, ref = "Male"),
          mental_health = fct_relevel(mental_health, ref = "No"))
+#It appears pivot_longer can't be found and I couldn't find it in my help documentation. I googled it and found its part of tidyverse, but re-installing it, Rstudio, and R still didn't work for me. Sorry for this issue on my end!
 
 #fit one model per drug and see coefficients
 by_drug_coefs <- dat %>% 
@@ -351,7 +353,7 @@ by_year_drug <- d_long %>%
 
 ## Functions
 
-Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variabe
+Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variable
 
 Now let's take the age function we have just created (evaluating whether age of first marijuana use was before or after the age of 18) and use it as a grouping variable to examine the mean, standard deviation, and min/max values for the age of first use variable in the "recent_drug,csv" data set. 
 1) first we name the data set, the outcome variable, and the grouping variable. We will use these to call up this info when applying the completed function.
@@ -444,4 +446,17 @@ To plot the summary data for our age of first use variables (age_marijuan, age_m
 fun4_plot(recent_drug)
 ```
 
+Peer Review:
+
+Things you did well:
+1. This is so well put together! Your tutorial explanations are already so thorough! I'm very impressed! 
+2. I appreciated how function 3 built upon function 2 to show that you can adapt the function to include a second grouping variable. The functions are great and the flow/explanation works very well for the tutorial. Also, its cool to see you use the same names for the variables in each function, its like building your own package of functions :)
+3. I really appreciated how you showed errors and possible other ways to write the same code. It was great for a tutorial to show alternatives and ways that you might mess up and why.
+
+Things I learned:
+1. That pivot_longer is available and an alternative to gather! Bummer that I can't get it to work on my computer, but still cool to see in use!!
+2. I'd never seen rpois used before (or don't remember it), so cool to see in use as well and as another option than rnorm.
+
+Areas for improvement:
+1. For your plot function, it might be nice to show people how to change the axis number sizes within the function to make it easier to read!
 
