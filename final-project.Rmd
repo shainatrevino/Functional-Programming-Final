@@ -146,9 +146,12 @@ map_int(l, length)
 
 There are 2 elements in our list and each has 5 values. 
 
+# TN: I like that you used a simple verctor/list to explain double to make it simple and clear to understand! 
+
 ### Using `map()` in data frames
 
 Since `map` can take a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through dataframes. 
+
 
 EXPLAIN DATA
 
@@ -222,6 +225,8 @@ cv <- data.frame(cv, row.names = column_names)
 cv
 ```
 
+# TN: It would have probably been nice to do map with a list of lists too, to see how powerful it can be - we can even loop through multiple data frames!! 
+
   
 #### Parallel iteration (e.g., `map2_*`, `pmap_*`) 
 
@@ -244,7 +249,8 @@ wts <- map(1:1715, ~rpois(20, 5))
 #map_dbl(obs, ~weighted.mean(.x, w = wts)) - had to comment to knit
 
 #Instead we need a parallel iteration to run the function on each vector of observation with each corresponding vector of weights. 
-map2_dbl(obs, wts, ~weighted.mean(.x, .y))
+m2_db <- map2_dbl(obs, wts, ~weighted.mean(.x, .y)) #I just saved it because I don't know how useful it is to see it printed 
+
 #make note of .x and .y and explain
 #we now have a weighted mean score for each participant
 ```
@@ -303,6 +309,9 @@ dat <- recent_drug %>%
   mutate(mental_health = ifelse(mental_health == "Yes", "Yes", "No"),
          sex = fct_relevel(sex, ref = "Male"),
          mental_health = fct_relevel(mental_health, ref = "No"))
+
+## TN: I am running into an error when I run the above: Error in pivot_longer(., cols = age_cocaine:age_marijuana, names_to = c("dis",  : could not find function "pivot_longer"
+
 
 #fit one model per drug and see coefficients
 by_drug_coefs <- dat %>% 
