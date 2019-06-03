@@ -28,6 +28,7 @@ drug_by_year <- import(here("data", "drug_by_year.csv"),
 
 recent_drug <- import(here("data", "2015_drug_dep.csv"),
                       setclass = "tbl_df")
+#great job using the here package, I always forget to use this, but it is so helpful when sharing code
 ```
 
 #### Info about the data:
@@ -58,6 +59,7 @@ For example, suppose you have a list that contains two other numbered lists with
 Our list looks like this:
 
 ```{r create-list}
+#great intro to your tutorial, your writing is very clear
 #creating list from two vectors of decimal values
 v <- c(1.85, 2.07, 3.71, 4.21, 5.36)
 v1 <- c(1.23, 2.53, 3.44, 4.71, 5.96)
@@ -76,6 +78,7 @@ However, this does not work when supplied our list
 ```{r error-code, eval = FALSE}
 round(l)
 #FIGURE OUT HOW TO KEEP CODE AND ERROR WHEN KNIT FILE, BUT KNIT DOESNT WORK
+#I think there is a global setting where you can have knit render even when there is an error
 ```
 
 Instead we need a function that will apply `round()` to every element in our list. Thats where we can use `map()`
@@ -83,14 +86,19 @@ Instead we need a function that will apply `round()` to every element in our lis
 ```{r map-round}
 #takes vector and rounds up
 map(l, round)
+
+#How will you demonstrate that map gives you a list? You'll want to make sure this is clear to the reader and maybe give a brief descrition of what a list is
 ```
 
 Notice how the output from `map()` is a list, and the `round()` function has been applied to each element in the list. 
+
 
 You could also use `map()` with a single vector, however in this case the output is the same as when solely using the `round()` function. 
 
 ```{r round-single-vec}
 map(v, round)
+
+#Here a short description of coercing may be helpful to the reader
 ```
 
 However, as mentioned above, this output is a list. When you have an atomic vector as an input or a list of numbered lists of length 1, you can coerce your output to an atomic vector.
@@ -167,6 +175,8 @@ To add arguments to a function within `map()`, we need to create an inline anony
 Therefore, to calculate the means, our `map()` function would look like this
 
 ```{r summarize}
+
+#I like your description of x as a place holder, this is a new way of characterizing the elements of a function for me
 means <- map_dbl(d, function(x) mean(x, na.rm = TRUE)) 
 means
 ```
@@ -194,6 +204,8 @@ map_df(d, function(x) {
   mean(x, na.rm = TRUE)
   sd(x, na.rm = TRUE)
 }) #note curly braces for longer functions
+
+#I like your inclusion of examples that don't work to help the reader problem solve
 
 column_names <- colnames(d) #creating a vector for the column names to add to dataframe
 
@@ -245,6 +257,8 @@ wts <- map(1:1715, ~rpois(20, 5))
 map2_dbl(obs, wts, ~weighted.mean(.x, .y))
 #make note of .x and .y and explain
 #we now have a weighted mean score for each participant
+
+#For me parallel iteration is always more difficult to understand without a plot, you may consider what visualization might aide your example
 ```
 
 `pmap()` can be supplied any number of inputs that you provide in a single list. This list can contain any number of inputs or arguments. 
@@ -269,6 +283,8 @@ walk2(by_year, paths, write.csv)
 #splits our longitudinal dataset by year and saves separate csv file for each year with the title ("year-2005") in the data folder of the working directory
 
 list.files("data")
+
+#I always struggle with walk and your example helped make its purpose clearer
 ```
 
 `reduce()` takes a vector of any length as it's input and returns a vector of length 1. For example `reduce(1:4, f)` returns `f(f(f(1, 2), 3), 4)`. 
@@ -301,6 +317,7 @@ dat <- recent_drug %>%
   mutate(mental_health = ifelse(mental_health == "Yes", "Yes", "No"),
          sex = fct_relevel(sex, ref = "Male"),
          mental_health = fct_relevel(mental_health, ref = "No"))
+#great work wrangling the data to get it in a useable form
 
 #fit one model per drug and see coefficients
 by_drug_coefs <- dat %>% 
@@ -353,6 +370,8 @@ by_year_drug <- d_long %>%
   group_by(year, drug, count) %>% 
   nest() %>% 
   mutate(count = map(data, ~mutate(.x, count = n()))) #this doesnt run
+
+#this is a long example, consider how your might break it up to keep the reader engaged
 ```
 
 ## Functions
@@ -435,6 +454,8 @@ Fununction 5: Plotting Mean, SD, Min, & Max
 To plot the summary data for our age of first use variables (age_marijuan, age_meth, age_heroin, and age_cocaine) found in our "recent_drug.csv" data we can create a function which will plot all of our summary variables (mean, sd, min, and max) at once.
 
 ```{r eval=FALSE}
+#function mispelled above
+#Your function examples have a lot of text, consider how you will break them up with code or visualizations. 
 #not working can delete
   fun5_plotsummary <- function(filename) {
   dat <- read.csv(file = filename, header = FALSE)
