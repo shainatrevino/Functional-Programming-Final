@@ -381,7 +381,8 @@ Now let's take the age function we have just created (evaluating whether age of 
 
 The function can now be stored and run on our data. We can examine the mean first age of use by any of the other variables in our dataset, including the 18 or below variable we created in the first function we created. Other interesting grouping variables might be income, ethnicity, or mental health status. If you decide you want to group our outcome first by two variables this is explored in function 3.
 
-
+# TN: great way of explaining fucntions through steps, it made it clear and easy to understand! 
+# TN: it could also the process for creatign a function of starting from  inside -> out to make the process more clear
 
 ```{r eval=FALSE}
 library(dplyr)
@@ -460,7 +461,10 @@ To plot the summary data for our age of first use variables (age_marijuan, age_m
   plot(min_age)
 }
 
-fun4_plot(recent_drug)
+fun4_plot(recent_drug) #TN this doesnt run 
 ```
+
+# TN: These are all great functions!!! And I love the step - by - step explanations. It would probably be nic to add warning and error messages when creating them, plus it would be a total plus for the intructional plan!! 
+
 
 
