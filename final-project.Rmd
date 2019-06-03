@@ -37,6 +37,8 @@ recent_drug <- import(here("data", "2015_drug_dep.csv"),
 `recent_drug` has data from 2015-2016 (most recent NHANES data available) and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. 
 * `age_stim` is a composite measure of age of first meth and cocaine use (e.g., age of first stimulant use)
 
+*TN: Great way of organizing the data! but I wonder if you could put all the data together in the same place and have a variable that identifies old from more recent data? * 
+
 # Tutorial
 
 ## Introduction
@@ -76,7 +78,11 @@ However, this does not work when supplied our list
 ```{r error-code, eval = FALSE}
 round(l)
 #FIGURE OUT HOW TO KEEP CODE AND ERROR WHEN KNIT FILE, BUT KNIT DOESNT WORK
+
+
 ```
+
+# TN: good point about finding out how to keep code and error!! I think that you could just cite the code with r markdown and mention what the error was
 
 Instead we need a function that will apply `round()` to every element in our list. Thats where we can use `map()`
 
@@ -84,6 +90,8 @@ Instead we need a function that will apply `round()` to every element in our lis
 #takes vector and rounds up
 map(l, round)
 ```
+
+*TN: I loved how you explained map by steps, first showing how you owuld do it with one vector and how to reach to the idea of using map, excellent! * 
 
 Notice how the output from `map()` is a list, and the `round()` function has been applied to each element in the list. 
 
@@ -144,9 +152,12 @@ map_int(l, length)
 
 There are 2 elements in our list and each has 5 values. 
 
+# TN: I like that you used a simple verctor/list to explain double to make it simple and clear to understand! 
+
 ### Using `map()` in data frames
 
 Since `map` can take a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through dataframes. 
+
 
 EXPLAIN DATA
 
@@ -220,6 +231,8 @@ cv <- data.frame(cv, row.names = column_names)
 cv
 ```
 
+# TN: It would have probably been nice to do map with a list of lists too, to see how powerful it can be - we can even loop through multiple data frames!! 
+
   
 #### Parallel iteration (e.g., `map2_*`, `pmap_*`) 
 
@@ -242,7 +255,8 @@ wts <- map(1:1715, ~rpois(20, 5))
 #map_dbl(obs, ~weighted.mean(.x, w = wts)) - had to comment to knit
 
 #Instead we need a parallel iteration to run the function on each vector of observation with each corresponding vector of weights. 
-map2_dbl(obs, wts, ~weighted.mean(.x, .y))
+m2_db <- map2_dbl(obs, wts, ~weighted.mean(.x, .y)) #I just saved it because I don't know how useful it is to see it printed 
+
 #make note of .x and .y and explain
 #we now have a weighted mean score for each participant
 ```
@@ -302,6 +316,9 @@ dat <- recent_drug %>%
          sex = fct_relevel(sex, ref = "Male"),
          mental_health = fct_relevel(mental_health, ref = "No"))
 
+## TN: I am running into an error when I run the above: Error in pivot_longer(., cols = age_cocaine:age_marijuana, names_to = c("dis",  : could not find function "pivot_longer"
+
+
 #fit one model per drug and see coefficients
 by_drug_coefs <- dat %>% 
   group_by(drug) %>% 
@@ -338,7 +355,7 @@ by_drug_models <- dat %>%
 
 
 ```
-
+# TN this looks like a great way of explaining how mutate and nest can be useful together! I actually learned a lot by looking at the last piece of code, very useful! Sadly I was having trouble running the chunk because I kept running on an error 
 
 ```{r nest-mutate, eval = FALSE, include = FALSE}
 #disregard
@@ -350,10 +367,12 @@ d_long <- drug_by_year %>%
          response = factor(response))
 
 by_year_drug <- d_long %>% 
-  group_by(year, drug, count) %>% 
+  group_by(year, drug) %>% #Count is not in the data frame so I am removing it
   nest() %>% 
-  mutate(count = map(data, ~mutate(.x, count = n()))) #this doesnt run
+  mutate(count = map(data, ~mutate(.x, count = n()))) #this doesnt run #now it runs! I think "count" was in the group by by mistake 
 ```
+
+# TN: this was suuper useful! and I was able to run it, I like how you use mutate with nest to create a list of useful data frames! 
 
 ## Functions
 
@@ -368,7 +387,8 @@ Now let's take the age function we have just created (evaluating whether age of 
 
 The function can now be stored and run on our data. We can examine the mean first age of use by any of the other variables in our dataset, including the 18 or below variable we created in the first function we created. Other interesting grouping variables might be income, ethnicity, or mental health status. If you decide you want to group our outcome first by two variables this is explored in function 3.
 
-
+# TN: great way of explaining fucntions through steps, it made it clear and easy to understand! 
+# TN: it could also the process for creatign a function of starting from  inside -> out to make the process more clear
 
 ```{r eval=FALSE}
 library(dplyr)
@@ -447,7 +467,10 @@ To plot the summary data for our age of first use variables (age_marijuan, age_m
   plot(min_age)
 }
 
-fun4_plot(recent_drug)
+fun4_plot(recent_drug) #TN this doesnt run 
 ```
+
+# TN: These are all great functions!!! And I love the step - by - step explanations. It would probably be nic to add warning and error messages when creating them, plus it would be a total plus for the intructional plan!! 
+
 
 
