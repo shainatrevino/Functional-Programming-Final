@@ -7,7 +7,7 @@ output:
 ---
 
 Feedback checklist:
-  * Use a dropdown menue to stucture the tutorial blogpost
+  * Use a dropdown menu to structure the tutorial blogpost
   * Fix display of function plot so axis can be read
 
 
