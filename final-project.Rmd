@@ -1,12 +1,14 @@
 ---
-title: "final-project"
-author: "Shaina Trevino"
+title: "Final Project"
+author: "Shaina Trevino, Jonathan Rochelle, & Andre Klest" 
 date: "5/16/2019"
 output: 
   html_document: default
 ---
 
-test username 2
+Feedback checklist:
+  * Use a dropdown menue to stucture the tutorial blogpost
+  * Fix display of function plot so axis can be read
 
 
 ```{r setup, include=FALSE}
@@ -73,7 +75,7 @@ round(v)
 
 However, this does not work when supplied our list
 
-```{r error-code, eval = FALSE}
+```{r error-code, error = TRUE}
 round(l)
 #FIGURE OUT HOW TO KEEP CODE AND ERROR WHEN KNIT FILE, BUT KNIT DOESNT WORK
 ```
@@ -87,13 +89,13 @@ map(l, round)
 
 Notice how the output from `map()` is a list, and the `round()` function has been applied to each element in the list. 
 
-You could also use `map()` with a single vector, however in this case the output is the same as when solely using the `round()` function. 
+You could also use `map()` with a single vector, however in this case the output is the same as when solely using the `round()` function. Additionally, you can adjust which decimal that you would like to round to by specifying the digits. 
 
 ```{r round-single-vec}
-map(v, round)
+map(v, round, digits = 1)
 ```
 
-However, as mentioned above, this output is a list. When you have an atomic vector as an input or a list of numbered lists of length 1, you can coerce your output to an atomic vector.
+However, as mentioned above, this output is a list. When you have an atomic vector as an input or a list of numbered lists of length 1, you can coerce your output to an atomic vector. This coerion allows the function to utilize values that work within the operation called on. 
 
 #### `map()` variants
   
@@ -162,7 +164,7 @@ d
 ```
 
 
-To add arguments to a function within `map()`, we need to create an inline anonymous function where your function is first specified with `function(x)` where `x` is a place holder for what the function is going to run on. Then you write you function that you want to run on each element (`x`). 
+To add arguments to a function within `map()`, we need to create an inline anonymous function where your function is first specified with `function(x)` where `x` is a place holder for what the function is going to run on. Then you write a function that you want to run on each element (`x`). 
 
 Therefore, to calculate the means, our `map()` function would look like this
 
@@ -242,9 +244,10 @@ wts <- map(1:1715, ~rpois(20, 5))
 #map_dbl(obs, ~weighted.mean(.x, w = wts)) - had to comment to knit
 
 #Instead we need a parallel iteration to run the function on each vector of observation with each corresponding vector of weights. 
-map2_dbl(obs, wts, ~weighted.mean(.x, .y))
+head(map2_dbl(obs, wts, ~weighted.mean(.x, .y)))
 #make note of .x and .y and explain
 #we now have a weighted mean score for each participant
+#we used head() to prevent the entirety of the extensive list to be displayed
 ```
 
 `pmap()` can be supplied any number of inputs that you provide in a single list. This list can contain any number of inputs or arguments. 
@@ -341,8 +344,8 @@ by_drug_models <- dat %>%
 ```
 
 
-```{r nest-mutate, eval = FALSE, include = FALSE}
-#disregard
+```{r nest-mutate}
+
 d_long <- drug_by_year %>% 
   select(-V1, -ethnicity) %>% 
   mutate(year = factor(year),
@@ -351,9 +354,9 @@ d_long <- drug_by_year %>%
          response = factor(response))
 
 by_year_drug <- d_long %>% 
-  group_by(year, drug, count) %>% 
+  group_by(year, drug) %>% 
   nest() %>% 
-  mutate(count = map(data, ~mutate(.x, count = n()))) #this doesnt run
+  mutate(count = map(data, ~mutate(.x, count = n()))) 
 ```
 
 ## Functions
@@ -413,13 +416,18 @@ function(x) {
 ```
 
 
-### Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variabe
+### Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variable
 
 Now let's take the age function we created earlier (evaluating whether age of first marijuana use was before or after the age of 18) and use it as a grouping variable to examine the mean, standard deviation, and min/max values for the age of first use variable in the "recent_drug,csv" data set. 
+
 1) first we name the data set, the outcome variable, and the grouping variable. We will use these to call up this info when applying the completed function.
+
 2) Next we use "enquo", part of the 'dplyr' package which should be loaded if you have not already done so, to select the variables we are planning to use in defining the function. Enquo helps R search for these variables within our data frame instead of searching the global environment for them. When using enquo the "!!" symbol will be neccessary anytime we want to refer back to these variables that we are defining here in the first steps of creating our function. EX. instead of writting mean(our_var_name) as usual we will need to write mean(!!our_var_name).
+
 3) The %>% symbol is a pipe operator and is used to feed each piece of our function through the proceeding statement, so that at each step the result of the previous argument is fed through the following argument. Ex. dataset %>% step1 %>% step2.
+
 4)"group_by" tells R to divide the outcome into a serperate row for each category of the grouping variable. 
+
 5) "summarize" is the step where we envoke the operations and calculations on our outcome variable. The results of the summarize step should be seperated thanks to the group_by statement in step 4, 
 
 The function can now be stored and run on our data. We can examine the mean first age of use by any of the other variables in our dataset, including the 18 or below variable we created in the first function we created. Other interesting grouping variables might be income, ethnicity, or mental health status. If you decide you want to group our outcome first by two variables this is explored in function 3.
@@ -434,7 +442,10 @@ fun2_mean1group <- function(data, cat_var, num_var){
   num_var <- enquo(num_var)
   data %>% #if (cat_var2 < 17)
     group_by(!!cat_var) %>%
-    summarize(mean = mean(!!num_var, na.rm = TRUE), sd = sd(!!num_var, na.rm = TRUE), min = min(!!num_var, na.rm = TRUE), max = max(!!num_var, na.rm = TRUE))
+    summarize(mean = mean(!!num_var, na.rm = TRUE),
+              sd = sd(!!num_var, na.rm = TRUE),
+              min = min(!!num_var, na.rm = TRUE),
+              max = max(!!num_var, na.rm = TRUE))
 }
 
 fun2_mean1group(recent_drug, mental_health, age_marijuana)
