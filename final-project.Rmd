@@ -51,6 +51,8 @@ What is Functional Programming
 
 #### What is `purrr::map`
 
+![](purrr.PNG) 
+
 `purrr:map()` is a functional. It takes a vector (or list of vectors) and a function as it's input, runs the function for each element in the vector, and then returns a list.
 
   * The `purrr` package is loaded when you load `tidyverse`
@@ -364,6 +366,8 @@ by_year_drug <- d_long %>%
 As we saw in the previous post, using pre-formed functions in R (e.g., `map()`) can be incredibly useful for iterating through lists and dataframes in an effecient and time saving manner. An alternative or supplementary choice to using packages like `purrr` is the option of writing your own custom R functions independently of any function package. Previously, we learned how to add an inline anonymous function `function(x)` to `map()` in order to add additional arguements. Now we will cover how to formulate a custom function. 
 
 #### What is a function?
+
+![](functions.png)
 
 In R, a function can be defined as any formula that carries out some type of operation. For example:
 
