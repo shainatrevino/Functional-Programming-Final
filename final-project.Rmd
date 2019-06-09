@@ -17,6 +17,7 @@ library(here)
 library(rio)
 library(tidyverse)
 library(broom)
+library(glue)
 
 #May need to install new version of tidyr for pivot_longer to work
 #devtools::install_github("tidyverse/tidyr")
@@ -523,6 +524,8 @@ fun4_plot(recent_drug)
 
 ## Putting it All Together
 
+![](summary.png)
+
 ### Review
 
 When you move to working with your own data in the real-world, often you need to address complex questions that may not perfectly align with either a custom function that you wrote or a variant of `map()`. In these cases, it is often useful to synthesize or combine the functions together in order to create a viable solution to the question you are trying to address. In this last post, we are going to do exactly that by using `pmap()` and a custom function to create a trove of custom plots! Finally, we will go over how to save these plots into a file. But before we do, let's review what we have learned so far.  
@@ -541,4 +544,33 @@ Functions allow us to create custom solutions to any problem we are addressing i
 
 ### Application 
 
+In this final section we want to use `pmap()` to build custom plots that are able to visualize data across multiple inputs from a list. The question that we are looking to answer is:
+  * How does average depression levels differ for males vs females across ethnicity. 
+Answering this question in a singular plot would be pretty simple. But what if we want to answer this question but also see how these differences look across income levels and mental health services. 
+That is Where the use of `pmap()` enters the picture!
+Before we apply `pmap()` we first want to nest our data into a list where the variables of interest (i.e., sex, ethnicity, depression levels) are nested within both mental health and income levels. 
+
+```{r}
+dat_1 <- dat %>%
+  #get rid of the variables we are not going to use
+  select(-age, -rehab, -insurance, -age_use, -drug) %>%
+  #nest the remaining variables of interest within income and mental health
+  nest(-income, -mental_health)
+```
+
+Now we use  `pmap()` and our anonymous function to create a set of custom plots.  
+
+```{r}
+plots <- dat_1 %>%
+  mutate(plots = pmap(list(data = dat_1$data, income = dat_1$income, mental_health = dat_1$mental_health), function(data, income, mental_health) {
+    ggplot(dat) + 
+    geom_bar(aes(ethnicity, sum_depression, fill = sex), stat = "summary", fun.y = "mean", position = "dodge", alpha = 0.7) +
+      theme_minimal() +
+       scale_fill_viridis_d() +
+      coord_flip() +
+      labs(title = glue("Depression Scores for Individuals Making {income}"), subtitle = "Comparison across sex and ethnicity", caption = glue("Access to mental health services: {mental_health}"), y = "Mean Depression Score", x = "Ethnicity")
+  }))
+
+#showing access to mental health services as a 1 or 2, instead of yes vs no. 
+```
 
