@@ -221,7 +221,7 @@ cv
 ```
 
   
-#### Parallel iteration (e.g., `map2_*`, `pmap_*`) 
+#### Parallel Iteration (e.g., `map2_*`, `pmap_*`) 
 
 The `map` variants discussed above all take a single input to iterate (i.e., call the function on), but sometimes you need to iterate through more than just one input. 
 
@@ -276,7 +276,7 @@ list.files("data")
 `modify()` returns the same type of input it is provided. For example, `modify(df, f)` will run the function on each column of the dataframe and return a dataframe as the output.
 
 
-#### Using `mutate` withing `nest()`
+#### Using `mutate` within `nest()`
 
 Explain list columns
 
@@ -294,9 +294,10 @@ You can use `group_by()` and `nest()` to split your data into list columns then 
 ```{r nest-mutate1}
 dat <- recent_drug %>% 
   select(-1:-2, -age_stim) %>% 
-  pivot_longer(cols = age_cocaine:age_marijuana, names_to = c("dis", "drug"), names_sep = "_") %>% 
+  #pivot_longer(cols = age_cocaine:age_marijuana, names_to = c("dis", "drug"), names_sep = "_") %>% 
+  gather(drug, age_use, -age, -sum_depression:-sex) %>%
+  separate(drug, c("dis", "drug"), names_sep = "_") %>%
   select(-dis) %>% 
-  rename(age_use = value) %>% 
   filter(!is.na(age_use)) %>% 
   mutate(mental_health = ifelse(mental_health == "Yes", "Yes", "No"),
          sex = fct_relevel(sex, ref = "Male"),
@@ -357,9 +358,64 @@ by_year_drug <- d_long %>%
 
 ## Functions
 
-Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variabe
+As we saw in the previous post, using pre-formed functions in R (e.g., `map()`) can be incredibly useful for iterating through lists and dataframes in an effecient and time saving manner. An alternative or supplementary choice to using packages like `purrr` is the option of writing your own custom R functions independently of any function package. Previously, we learned how to add an inline anonymous function `function(x)` to `map()` in order to add additional arguements. Now we will cover how to formulate a custom function. 
 
-Now let's take the age function we have just created (evaluating whether age of first marijuana use was before or after the age of 18) and use it as a grouping variable to examine the mean, standard deviation, and min/max values for the age of first use variable in the "recent_drug,csv" data set. 
+#### What is a function?
+
+In R, a function can be defined as any formula that carries out some type of operation. For example:
+
+```{r}
+100/5*7
+```
+
+In this case, each mathematical operation (i.e., / and *) can be defined as a function. 
+
+For all functions, there are three essential components:
+
+1. body(): a collection of statements that defines what a function does
+2. formals(): is the argument supplied to the function
+3. environments(): collection of objects in a function
+
+```{r}
+# example function
+square <- function(x) {
+  x^2
+}
+# use of the function
+sum(2)
+```
+
+In the above function, whatever is contained in the `function()` is considered the *body* while the line below (i.e., x^2) that specifies the arguement is considered the *formal*. 
+
+There are several different ways that functions can be saved:
+
+1. It can be stored as an object, which could be useful if you are planning on using it for future tasks. 
+
+```{r}
+triple <- function(x) {
+  x*3
+}
+```
+
+2. It can be stored as a list, which could allow you to run more than one function in a loop
+
+```{r}
+# need help here
+```
+
+
+3. It can be an anonymous function, which could be used when it is only going to be used once.
+
+```{r}
+function(x) {
+  x*3
+}
+```
+
+
+### Function2: Summarize Mean, SD, Min, and Max using by a Group_By Variabe
+
+Now let's take the age function we created earlier (evaluating whether age of first marijuana use was before or after the age of 18) and use it as a grouping variable to examine the mean, standard deviation, and min/max values for the age of first use variable in the "recent_drug,csv" data set. 
 1) first we name the data set, the outcome variable, and the grouping variable. We will use these to call up this info when applying the completed function.
 2) Next we use "enquo", part of the 'dplyr' package which should be loaded if you have not already done so, to select the variables we are planning to use in defining the function. Enquo helps R search for these variables within our data frame instead of searching the global environment for them. When using enquo the "!!" symbol will be neccessary anytime we want to refer back to these variables that we are defining here in the first steps of creating our function. EX. instead of writting mean(our_var_name) as usual we will need to write mean(!!our_var_name).
 3) The %>% symbol is a pipe operator and is used to feed each piece of our function through the proceeding statement, so that at each step the result of the previous argument is fed through the following argument. Ex. dataset %>% step1 %>% step2.
@@ -385,7 +441,7 @@ fun2_mean1group(recent_drug, mental_health, age_marijuana)
 #fun2_mean1group(iris, Species, Sepal.Width)
 ```
 
-Function 3: Two grouping variables 
+### Function 3: Two grouping variables 
 5) If you wish to add a second "group_by" variable start by including a variable name in the Function itself, and include an additional enquo command
 6) Now in the "group_by" command include a second variable using the "!!" as before. ex: group_by(!!group_var1, !!group_var2)
 7) after the "summarize" command include an additional %>% and add the "spread" command naming the varable as before (!!group_var1), and indicating the outcome you wish to report. 
@@ -411,7 +467,7 @@ fun3_mean2groups(recent_drug, mental_health, income, age_marijuana)
 
 ```
 
-Function 4: Creating a Function Using GGPlot
+### Function 4: Creating a Function Using GGPlot
 
 To plot our outcome variable, in this case age of first marijuana use, we can create a function which will plot the age of first grouped by variable of interst. To test our function we will use "income" as category to group age of first marijuana use against on the x-axis. 
 
@@ -430,7 +486,7 @@ fun4_plot(recent_drug, "income", "age_marijuana")
 
 ```
 
-Fununction 5: Plotting Mean, SD, Min, & Max
+### Function 5: Plotting Mean, SD, Min, & Max
 
 To plot the summary data for our age of first use variables (age_marijuan, age_meth, age_heroin, and age_cocaine) found in our "recent_drug.csv" data we can create a function which will plot all of our summary variables (mean, sd, min, and max) at once.
 
@@ -449,5 +505,25 @@ To plot the summary data for our age of first use variables (age_marijuan, age_m
 
 fun4_plot(recent_drug)
 ```
+
+## Putting it All Together
+
+### Review
+
+When you move to working with your own data in the real-world, often you need to address complex questions that may not perfectly align with either a custom function that you wrote or a variant of `map()`. In these cases, it is often useful to synthesize or combine the functions together in order to create a viable solution to the question you are trying to address. In this last post, we are going to do exactly that by using `pmap()` and a custom function to create a trove of custom plots! Finally, we will go over how to save these plots into a file. But before we do, let's review what we have learned so far.  
+
+#### Purr
+
+In the beginning of this tutorial, we started out by learning how to use the `purr` package to apply useful arguments (e.g., `round`) to multiple items in a list through the `map()` function. 
+We then learned how `map()` and its variant `map_df()` can be utilized to iterate through dataframes. 
+Additionally, we found out in the case of parallel iteration, the functions `map2_*` and `pmap_*` can be used to iterate through more than a single input. 
+
+#### Functions
+
+Functions allow us to create custom solutions to any problem we are addressing independent of a pre-made package. Remember, anything that carries out an operation is a function, however, for our purposes we go beyond this definition by using the *body* and *formals* descriptions to better define how to formulate a function. 
+
+![All rights to Daniel Anderson](function.PNG)  
+
+### Application 
 
 
