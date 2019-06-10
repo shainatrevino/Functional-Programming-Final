@@ -558,19 +558,49 @@ dat_1 <- dat %>%
   nest(-income, -mental_health)
 ```
 
-Now we use  `pmap()` and our anonymous function to create a set of custom plots.  
+Now we use `pmap()` and our anonymous function to create a set of custom plots. In order to apply the function across the variables of mental health and income levels, we will use the `glue` package. 
 
 ```{r}
 plots <- dat_1 %>%
+  # The first step is to use mutate to apply the pmap function on the variables we will be iterating through and then write an anonymous function using the specifications from pmap
   mutate(plots = pmap(list(data = dat_1$data, income = dat_1$income, mental_health = dat_1$mental_health), function(data, income, mental_health) {
+    # Now we will embed the ggplot code within the body of our function
     ggplot(dat) + 
     geom_bar(aes(ethnicity, sum_depression, fill = sex), stat = "summary", fun.y = "mean", position = "dodge", alpha = 0.7) +
+      # Add aesthetics to the plot
       theme_minimal() +
-       scale_fill_viridis_d() +
+      scale_fill_viridis_d() +
       coord_flip() +
+      # in the labels section use the glue argument to iterate across income for the titles and mental health sercies for caption. 
       labs(title = glue("Depression Scores for Individuals Making {income}"), subtitle = "Comparison across sex and ethnicity", caption = glue("Access to mental health services: {mental_health}"), y = "Mean Depression Score", x = "Ethnicity")
   }))
 
 #showing access to mental health services as a 1 or 2, instead of yes vs no. 
+```
+
+There are now 44 plots that visualize our question of interest across mental health and income levels by using the `glue` package. Note that the plots are saved as a list within the object "plots." Thus, to access the plots we would 
+  * specify the object "plots"
+  * access the list "plots" by using the $ operation
+  * enter the number of which plot we want to view
+To test our code, we can randomly select any number from 1-44: 
+
+```{r}
+plots$plots[[43]]
+```
+
+Finally, we want to save our work! To do this we combine the different skills we have learned including `glue` and `walk2`
+
+```{r}
+# create an object files that uses meaningful names for the plots
+files <- str_replace_all(tolower(plots$income), " ", "-")
+# create the plot folder 
+fs::dir_create(here::here("plots"))
+# use the glue function to apply the object files to each plot
+paths <- here::here("plots", glue("{files}.png"))
+# walk2 specifies the path and sizes of plots 
+walk2(paths, plots$plots, ggsave,
+      width = 9.5, height = 6.5, dpi = 500)
+
+#only saved 15 plots instead of th 44. It is because I am saving it by income only, how do I had the mental health services also?
 ```
 
