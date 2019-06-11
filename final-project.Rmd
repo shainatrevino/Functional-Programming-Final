@@ -18,9 +18,6 @@ library(rio)
 library(tidyverse)
 library(broom)
 library(glue)
-
-#May need to install new version of tidyr for pivot_longer to work
-#devtools::install_github("tidyverse/tidyr")
 ```
 
 ## Importing data
@@ -33,12 +30,7 @@ recent_drug <- import(here("data", "2015_drug_dep.csv"),
                       setclass = "tbl_df")
 ```
 
-#### Info about the data:
 
-`drug_by_year` has data from 2005 to 2015 and reports on the people who responded yes to using illicit substances in the last year. 
-
-`recent_drug` has data from 2015-2016 (most recent NHANES data available) and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. 
-* `age_stim` is a composite measure of the age of first meth and cocaine use (e.g., age of first stimulant use)
 
 # Tutorial
 
@@ -148,23 +140,33 @@ map_int(l, length)
 
 There are 2 elements in our list and each has 5 values. 
 
+### Information about the data
+
+Data used in this tutorial came from the Center for Disease Control and Prevention's (CDC) National Health and Nutrition Examination Survey (NHANES). The study began in 1999 and the most recent data collected and publicly available are from 2015-2016.
+
+These data and codebooks are available online [here](https://www.cdc.gov/nchs/nhanes/about_nhanes.htm).
+
+NHANES surveys around 5,000 participants accross the U.S. each year. Surveys include demographic, socioeconomic, dietary, and health related questions, as well as medical records, physiological assessments, and laboratory test. 
+
+For this tutorial we will use two data frames: 
+
+1. `drug_by_year` includes data from 2005 to 2015 and reports on the people who responded yes to using illicit substances in the last year. 
+
+2. `recent_drug` includes has data from 2015-2016 and shows the age of first drug use, a summed depression score, whether or not participants have been to rehab, have access to mental health services, and have health insurance. 
+
 ### Using `map()` in data frames
 
 Since `map()` can take a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through data frames. 
 
-EXPLAIN DATA
-
 For example, say we want to use the NHANES data to calculate the mean for age of first use for each drug and depression scores. Since there are quite a bit of missing values in this data set, so we will need to add arguments to the mean function to ignore the missing data. 
 
-Our data looks like this
+The data frame looks like this
 
 ```{r tidy-data-map-ex, echo = FALSE}
-#mean and sd
 d <- recent_drug %>% 
   select(age_cocaine:sum_depression)
 d
 ```
-
 
 To add arguments to a function within `map()`, we need to create an inline anonymous function where your function is first specified with `function(x)` where `x` is a place holder for what the function is going to run on. Then you write a function that you want to run on each element (`x`). 
 
@@ -192,16 +194,21 @@ You can use `map_df()` to return a data frame as the output instead of an atomic
 
 For example, say we want to return a data frame of the means and standard deviations of each column within our data frame. 
 
+You would expect the below example to work, but it doesn't because only the last line in the function is being evaluated and printed, so we only get standard deviations as the output. Also note you need to use curly braces for longer functions as seen here.
+
 ```{r map-df}
-#you would expect this to work, but doesn't because only the last line in the function is being evaluated and printed, so we only get sds
 map_df(d, function(x) {
   mean(x, na.rm = TRUE)
   sd(x, na.rm = TRUE)
-}) #note curly braces for longer functions
+}) 
+```
 
-column_names <- colnames(d) #creating a vector for the column names to add to dataframe
+Instead, you need to instead use `summarize()` to work within the data frame and `summarize()` each vector
 
-#need to instead use summarize to summarize each vector
+```{r map-df1}
+#creating a vector for the column names to add to data frame
+column_names <- colnames(d) 
+
 map_df(d, function(x) {
   summarize(d, mean = mean(x, na.rm = TRUE),
             sd = sd(x, na.rm = TRUE))
@@ -210,16 +217,16 @@ map_df(d, function(x) {
 
 Or you could do the above in two separate steps, using `map()` to loop the functions through vectors and then put the vectors into a data frame
 
-```{r map-df1}
-#create vectors by looping functions through data frames
+```{r map-df2}
+#first create vectors by looping functions through data frames
 mean <- map(d, ~mean(.x, na.rm = TRUE))
 sd <- map(d, ~sd(.x, na.rm = TRUE))
-#combine vectors
+#then combine vectors
 cv <- c(mean, sd, recursive = TRUE)
-#change attributes
+#manually change attributes
 attr(cv, "dim") <- c(6, 2) #6 variables in two columns (mean and sd)
 colnames(cv) <- c("mean", "sd")
-#transform to dataframe
+#transform to data frame
 cv <- data.frame(cv, row.names = column_names)
 cv
 ```
@@ -238,19 +245,29 @@ This can be accomplished with `map2_` or `pmap_`
 For example, say you wanted to calculate a weighted mean from a vector of data values and a vector of weights.
 
 ```{r parallel}
-#simulate data from mean distribution and create weights
-obs <- map(1:1715, ~rnorm(n = 20, mean = 17.289, sd = 4.558)) #1715 obs for marijuana, mean and sd from table above
+#create vectors for simulated data from mean distribution of our data and weights
+obs <- map(1:1715, ~rnorm(n = 20, mean = 17.289, sd = 4.558))
 wts <- map(1:1715, ~rpois(20, 5))
-
-#this doesnt work because the weight argument is expecting a single value to apply to all observations. 
-#map_dbl(obs, ~weighted.mean(.x, w = wts)) - had to comment to knit
-
-#Instead we need a parallel iteration to run the function on each vector of observation with each corresponding vector of weights. 
-head(map2_dbl(obs, wts, ~weighted.mean(.x, .y)))
-#make note of .x and .y and explain
-#we now have a weighted mean score for each participant
-#we used head() to prevent the entirety of the extensive list to be displayed
 ```
+
+The following example doesnt work because the weight argument is expecting a single value to apply to all observations, but we have a vector of weights. 
+
+```{r parallel1, error = TRUE}
+map_dbl(obs, ~weighted.mean(.x, w = wts))
+```
+
+Instead, we need a parallel iteration with `map2()` to run the function on each vector of observation with each corresponding vector of weights. 
+
+Also, notice that when using `map2()` you will have an additional argument `.y`, along with `.x`, that corresponds to the second vector you are iterating through. 
+
+```{r parallel2}
+#note that we used head() to prevent the entirety of the extensive list to be displayed
+head(map2_dbl(obs, wts, ~weighted.mean(.x, .y)))
+```
+
+The results is a weighted mean score for each participant. 
+
+#### `pmap()` briefly
 
 `pmap()` can be supplied any number of inputs that you provide in a single list. This list can contain any number of inputs or arguments. 
 
@@ -258,7 +275,7 @@ head(map2_dbl(obs, wts, ~weighted.mean(.x, .y)))
 
 You can name the inputs in the list which is helpful when iterating through complex functions
 
-*We will show you how to use `pmap` to iterate and build custom plots in a later blog post*
+We will show you how to use `pmap` to iterate and build custom plots in a later blog post
 
 
 #### Other `purrr` functions (e.g., `walk_*`, `reduce`, `modify_*`) 
@@ -267,23 +284,27 @@ The `map()` variants discussed above all return an output (either an atomic vect
   
 Very useful variant of `map()` is `walk()`, specifically `walk2()` which can be used to save objects to a disk. Note: when saving something to a disk you have to provide 2 inputs: the object and the file path - this requires parallel iteration.   
 
+The following code splits our longitudinal dataset by year and saves a separate .csv file for each year with the title ("year-2005", etc.) in the data folder of the working directory
+
 ```{r walk-ex, eval = FALSE}
 by_year <- split(drug_by_year, drug_by_year$year)
 paths <- here("data", paste0("year-", names(by_year), ".csv"))
 walk2(by_year, paths, write.csv)
-#splits our longitudinal dataset by year and saves separate csv file for each year with the title ("year-2005") in the data folder of the working directory
+
 
 list.files("data")
 ```
 
-`reduce()` takes a vector of any length as it's input and returns a vector of length 1. For example `reduce(1:4, f)` returns `f(f(f(1, 2), 3), 4)`. 
 
-`modify()` returns the same type of input it is provided. For example, `modify(df, f)` will run the function on each column of the data frame and return a data frame as the output.
+Other useful functions are: 
 
+* `reduce()` takes a vector of any length as it's input and returns a vector of length 1. For example `reduce(1:4, f)` returns `f(f(f(1, 2), 3), 4)`. 
 
-#### Using `mutate` within `nest()`
+* `modify()` returns the same type of input it is provided. For example, `modify(df, f)` will run the function on each column of the data frame and return a data frame as the output.
 
-Explain list columns
+#### Using `mutate` within `nest()` is powerful in list columns
+
+The data frames we have worked with so far have all contained columns of atomic vectors, however you can also have columns of lists within data frames (i.e., list column).
 
 You can use `group_by()` and `nest()` to split your data into list columns then apply `mutate` to:
 
@@ -296,34 +317,49 @@ You can use `group_by()` and `nest()` to split your data into list columns then 
 4. fit multiple different models for each grouping factor and view coefficients
 
 
-```{r nest-mutate1}
+First, we need to transform our data a bit so that we can properly fit our models.
+
+```{r nest-mutate1-clean}
 dat <- recent_drug %>% 
-  select(-1:-2, -age_stim) %>% 
-  #pivot_longer(cols = age_cocaine:age_marijuana, names_to = c("dis", "drug"), names_sep = "_") %>% 
+  select(-1:-2, -age_stim) %>%
   gather(drug, age_use, -age, -sum_depression:-sex) %>%
-  separate(drug, c("dis", "drug"), names_sep = "_") %>%
+  separate(drug, c("dis", "drug"), sep = "_") %>%
   select(-dis) %>% 
   filter(!is.na(age_use)) %>% 
   mutate(mental_health = ifelse(mental_health == "Yes", "Yes", "No"),
          sex = fct_relevel(sex, ref = "Male"),
          mental_health = fct_relevel(mental_health, ref = "No"))
+```
 
-#fit one model per drug and see coefficients
+Then, we will use `group_by()` and `nest()` to split our data by each type of drug, fit a model that predicts age of first use from participant sex for each drug category, and view the coefficients.
+
+```{r nest-mutate1}
+#fit one model per drug and view coefficients
 by_drug_coefs <- dat %>% 
   group_by(drug) %>% 
   nest() %>% 
   mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
          coef = map(model, ~tidy(.x))) %>% 
   unnest(coef)
+by_drug_coefs
+```
 
-#Look at model fit stats per drug model - will be bad
+Next, we can compare all model fits (note the model fits will not be good since our models were not significant).
+
+```{r nest-mutate2}
+#Look at model fit stats per drug model
 by_drug_fit <- dat %>% 
   group_by(drug) %>% 
   nest() %>% 
   mutate(model = map(data, ~lm(age_use ~ sex, data = .x)),
          fit = map(model, ~glance(.x))) %>% 
   unnest(fit)
+by_drug_fit
+```
 
+Finally, we can also extract the mean age of first use for males and females for each drug
+
+```{r nest-mutate3}
 #mean age of use for males and females in first model
 by_drug_sex <- dat %>% 
   group_by(drug) %>% 
@@ -333,7 +369,12 @@ by_drug_sex <- dat %>%
          males = map_dbl(coefs, 1),
          females = males + map_dbl(coefs, 2)) %>% 
   select(drug, males, females)
+by_drug_sex
+```
 
+Another powerful use of list columns is being able to fit multiple models by each drug. Then, you could run through the same steps as above to compare model fits, etc. 
+
+``` {r nest-mutate4}
 #fit multiple models by year
 by_drug_models <- dat %>% 
   group_by(drug) %>% 
@@ -341,12 +382,10 @@ by_drug_models <- dat %>%
   mutate(m1 = map(data, ~lm(age_use ~ sex, data = .x)),
          m2 = map(data, ~lm(age_use ~ sex + mental_health, data = .x)),
          m3 = map(data, ~lm(age_use ~ sex * mental_health, data = .x)))
-
-
 ```
 
 
-```{r nest-mutate}
+```{r nest-mutate, include = FALSE}
 
 d_long <- drug_by_year %>% 
   select(-V1, -ethnicity) %>% 
@@ -407,7 +446,12 @@ triple <- function(x) {
 2. It can be stored as a list, which could allow you to run more than one function in a loop
 
 ```{r}
-# need help here
+fun_list <- list(n = ~length(x),
+                 n_miss = ~sum(is.na(x)),
+                 mean = ~mean(x, na.rm = TRUE), 
+                 sd = ~sd(x, na.rm = TRUE),
+                 min = ~min(x),
+                 max = ~max(x))
 ```
 
 
@@ -532,7 +576,7 @@ When you move to working with your own data in the real-world, often you need to
 #### Purr
 
 At the beginning of this tutorial, we started out by learning how to use the `purr` package to apply useful arguments (e.g., `round`) to multiple items in a list through the `map()` function. 
-We then learned how `map()` and its variant `map_df()` can be utilized to iterate through dataframes. 
+We then learned how `map()` and its variant `map_df()` can be utilized to iterate through data frames. 
 Additionally, we found out in the case of parallel iteration, the functions `map2_*` and `pmap_*` can be used to iterate through more than a single input. 
 
 #### Functions
