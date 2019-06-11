@@ -80,7 +80,6 @@ However, this does not work when supplied our list
 
 ```{r error-code, error = TRUE}
 round(l)
-#FIGURE OUT HOW TO KEEP CODE AND ERROR WHEN KNIT FILE, BUT KNIT DOESNT WORK
 ```
 
 Instead, we need a function that will apply `round()` to every element in our list. That's where we can use `map()`
@@ -151,7 +150,7 @@ There are 2 elements in our list and each has 5 values.
 
 ### Using `map()` in data frames
 
-Since `map` can take a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through data frames. 
+Since `map()` can take a vector for an input, and data frames are lists containing vectors, you can use `map` to iterate through data frames. 
 
 EXPLAIN DATA
 
@@ -586,6 +585,8 @@ To test our code, we can randomly select any number from 1-44:
 
 ```{r}
 plots$plots[[43]]
+
+plots$plots[[20]]
 ```
 
 Finally, we want to save our work! To do this we combine the different skills we have learned including `glue` and `walk2`
