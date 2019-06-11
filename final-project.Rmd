@@ -8,7 +8,6 @@ output:
 
 Feedback checklist:
   * Use a dropdown menu to structure the tutorial blogpost
-  * Fix display of function plot so axis can be read
 
 
 ```{r setup, include=FALSE}
@@ -538,7 +537,8 @@ To plot our outcome variable, in this case age of first marijuana use, we can cr
 ```{r eval=FALSE}
 fun4_plot <- function(data, x, y) {
     ggplot(data, aes_string(x, y)) +
-      geom_point(color = "blue")
+      geom_point(color = "blue") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 }
 
 fun4_plot(recent_drug, "income", "age_marijuana")
