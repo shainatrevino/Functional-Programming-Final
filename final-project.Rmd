@@ -597,6 +597,10 @@ Before we apply `pmap()` we first want to nest our data into a list where the va
 dat_1 <- dat %>%
   #get rid of the variables we are not going to use
   select(-age, -rehab, -insurance, -age_use, -drug) %>%
+  filter(!is.na(mental_health)) %>% 
+  filter(!is.na(income) |
+           income != "Refused" |
+           income != "Don't know") %>% 
   #nest the remaining variables of interest within income and mental health
   nest(-income, -mental_health)
 ```
@@ -621,16 +625,16 @@ plots <- dat_1 %>%
 #showing access to mental health services as a 1 or 2, instead of yes vs no. 
 ```
 
-There are now 44 plots that visualize our question of interest across mental health and income levels by using the `glue` package. Note that the plots are saved as a list within the object "plots." Thus, to access the plots we would 
+There are now 27 plots that visualize our question of interest across mental health and income levels by using the `glue` package. Note that the plots are saved as a list within the object "plots." Thus, to access the plots we would 
   * specify the object "plots"
   * access the list "plots" by using the $ operation
   * enter the number of which plot we want to view
-To test our code, we can randomly select any number from 1-44: 
+To test our code, we can randomly select any number from 1-27: 
 
 ```{r}
-plots$plots[[43]]
+plots$plots[[27]]
 
-plots$plots[[20]]
+plots$plots[[10]]
 ```
 
 Finally, we want to save our work! To do this we combine the different skills we have learned including `glue` and `walk2`
